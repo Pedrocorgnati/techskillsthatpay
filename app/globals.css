@@ -24,9 +24,9 @@
 
 .dark {
   color-scheme: dark;
-  --color-background: 31 31 31;
-  --color-surface: 31 31 31;
-  --color-card: 1 4 9;
+  --color-background: 1 4 9;
+  --color-surface: 1 4 9;
+  --color-card: 31 31 31;
   --color-border: 56 60 68;
   --color-muted: 38 45 55;
   --color-text-primary: 226 232 240;

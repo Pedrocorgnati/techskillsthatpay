@@ -43,7 +43,7 @@ export default function Header() {
         </Link>
         <nav
           aria-label="Main menu"
-          className="hidden items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1 shadow-sm shadow-slate-200/70 backdrop-blur dark:shadow-none sm:flex"
+          className="hidden items-center gap-2 rounded-full px-3 py-1 shadow-sm shadow-slate-200/70 backdrop-blur dark:shadow-none sm:flex"
         >
           <ul className="flex items-center gap-2 text-sm font-semibold text-text-secondary">
             {navItems.map((item) => (
