@@ -1,0 +1,110 @@
+{
+  "id": "1f21c6e8-9607-428b-a0f0-01f7eeecb057",
+  "model": "sonar-pro",
+  "created": 1766098832,
+  "usage": {
+    "prompt_tokens": 96,
+    "completion_tokens": 1195,
+    "total_tokens": 1291,
+    "search_context_size": "low"
+  },
+  "citations": [
+    "https://elementor.com/blog/website-color-schemes-guide/",
+    "https://hookagency.com/blog/website-color-schemes-2020/",
+    "https://www.adobe.com/express/learn/blog/color-psychology-of-branding",
+    "https://www.interaction-design.org/literature/article/ui-color-palette",
+    "https://www.cccreative.design/blogs/ui-color-palette-for-startups-how-to-build-one-that-converts-cc-creative",
+    "https://blog.duda.co/our-best-color-combinations-for-a-website-stunning-website-color-schemes-that-will-work-in-2025",
+    "https://www.designrush.com/best-designs/websites/trends/website-color-palette",
+    "https://www.figma.com/resource-library/color-combinations/",
+    "https://thebranx.com/blog/tech-brands-2025-the-most-important-branding-updates-and-trends-so-far"
+  ],
+  "search_results": [
+    {
+      "title": "Website Color Schemes: 30 Inspiring Palettes & A Complete Guide ...",
+      "url": "https://elementor.com/blog/website-color-schemes-guide/",
+      "date": "2025-11-13",
+      "last_updated": "2025-12-18",
+      "snippet": "Balance is Key: Most professional websites use three main colors. You can create a balanced, hierarchical design by following the 60-30-10 rule ...",
+      "source": "web"
+    },
+    {
+      "title": "50 Beautiful Website Color Schemes & CSS Hex Codes (2025)",
+      "url": "https://hookagency.com/blog/website-color-schemes-2020/",
+      "date": "2025-11-04",
+      "last_updated": "2025-12-18",
+      "snippet": "Get inspired by creative website color schemes that enhance brand identity & user experience. Explore color palette ideas to make your web design stand out.",
+      "source": "web"
+    },
+    {
+      "title": "The Top Color Trends for Branding in 2025 - Adobe",
+      "url": "https://www.adobe.com/express/learn/blog/color-psychology-of-branding",
+      "date": "2025-05-14",
+      "last_updated": "2025-12-18",
+      "snippet": "36% of consumers predict that both AI-generated futuristic tones and earthy, organic color palettes will dominate branding trends in 2025. Three in 10 want ...",
+      "source": "web"
+    },
+    {
+      "title": "UI Color Palette 2025: Best Practices, Tips, and Tricks for Designers",
+      "url": "https://www.interaction-design.org/literature/article/ui-color-palette",
+      "date": "2025-11-14",
+      "last_updated": "2025-12-18",
+      "snippet": "The 60-30-10 rule is an effective guideline to help you put balance and visual comfort in your design, and the proportions split between primary ...",
+      "source": "web"
+    },
+    {
+      "title": "UI Color Palette for Startups: How to Build One That Converts",
+      "url": "https://www.cccreative.design/blogs/ui-color-palette-for-startups-how-to-build-one-that-converts-cc-creative",
+      "date": "2025-12-08",
+      "last_updated": "2025-12-10",
+      "snippet": "That means building out tints and shades, often on a 100–900 scale. Using one hex code across your product leads to flat, inconsistent visuals.",
+      "source": "web"
+    },
+    {
+      "title": "Our best color combinations for a website",
+      "url": "https://blog.duda.co/our-best-color-combinations-for-a-website-stunning-website-color-schemes-that-will-work-in-2025",
+      "date": "2025-06-03",
+      "last_updated": "2025-12-18",
+      "snippet": "In 2025, we're seeing a growing alignment with the Sahara-inspired palette: soft ochres, dusty clays, olive-tinted neutrals, and layered beige ...",
+      "source": "web"
+    },
+    {
+      "title": "Website Color Palettes That Drive ROI - DesignRush",
+      "url": "https://www.designrush.com/best-designs/websites/trends/website-color-palette",
+      "date": "2025-09-12",
+      "snippet": "Explore the palette strategies, neon, earth tones, monochrome, that today's top brands use to drive shareability, trust, and long-term ROI.",
+      "source": "web"
+    },
+    {
+      "title": "100 Color Combinations To Influence Your Next Design - Figma",
+      "url": "https://www.figma.com/resource-library/color-combinations/",
+      "date": "2024-04-29",
+      "last_updated": "2025-12-17",
+      "snippet": "Pairing the right colors together creates harmony in UI designs. Learn 100 color combinations for your next project and how Figma can help.",
+      "source": "web"
+    },
+    {
+      "title": "Tech brands 2025: The most important branding updates and trends ...",
+      "url": "https://thebranx.com/blog/tech-brands-2025-the-most-important-branding-updates-and-trends-so-far",
+      "date": "2025-06-18",
+      "last_updated": "2025-12-18",
+      "snippet": "The new color palette supports this tone. While black and white remain central, the palette now includes muted grays and blues that evoke ...",
+      "source": "web"
+    }
+  ],
+  "object": "chat.completion",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"summary\": {\n    \"focus\": \"Modern 2025-friendly palettes for tech/SaaS/blog sites with light+dark modes and good accessibility.\",\n    \"guidelines\": {\n      \"primary_usage\": \"Follow ~60-30-10: ~60% neutral, 30% primary, 10% accent for CTAs/highlights.[1][4]\",\n      \"accessibility\": {\n        \"body_text\": \"Target WCAG AA contrast ≥ 4.5:1 for normal text, 3:1 for large text.[4][5]\",\n        \"ui_elements\": \"Ensure buttons, links, inputs meet ≥ 3:1 against their backgrounds.[4][5]\",\n        \"notes\": [\n          \"Avoid very light grays for body text on light backgrounds.\",\n          \"Use strong neutrals for text and soft colors for large surfaces.\",\n          \"Test each final combo with a contrast checker.\"\n        ]\n      },\n      \"trend_notes_2025\": [\n        \"Tech/SaaS commonly uses deep blues, indigos, cyan-leaning blues, cool grays for trust and security.[1][3][5]\",\n        \"Futuristic gradients and AI/sci‑fi tones are trending for hero sections and dark-mode UIs.[1][3][5]\",\n        \"Earthy and humanized palettes (muted clays, olives, corals, soft neutrals) make tech feel more approachable.[1][3][6]\"\n      ]\n    }\n  },\n\n  \"recommended_grayscale\": {\n    \"scale\": {\n      \"gray_0\": \"#FFFFFF\",\n      \"gray_50\": \"#F9FAFB\",\n      \"gray_100\": \"#F3F4F6\",\n      \"gray_200\": \"#E5E7EB\",\n      \"gray_300\": \"#D1D5DB\",\n      \"gray_400\": \"#9CA3AF\",\n      \"gray_500\": \"#6B7280\",\n      \"gray_600\": \"#4B5563\",\n      \"gray_700\": \"#374151\",\n      \"gray_800\": \"#1F2933\",\n      \"gray_900\": \"#111827\"\n    },\n    \"usage\": {\n      \"light_mode_bg\": [\"#FFFFFF\", \"#F9FAFB\", \"#F3F4F6\"],\n      \"light_mode_text\": [\"#111827\", \"#1F2933\", \"#374151\"],\n      \"dark_mode_bg\": [\"#020617\", \"#0B1120\", \"#111827\"],\n      \"dark_mode_text\": [\"#E5E7EB\", \"#F3F4F6\", \"#FFFFFF\"]\n    },\n    \"wcag_notes\": [\n      \"Gray_800–900 text on Gray_0–100 background comfortably exceeds AA and typically AAA for body text.\",\n      \"Gray_50–100 text on Gray_800–900 backgrounds is suitable for dark mode body and UI text.\",\n      \"Reserve Gray_300 or lighter primarily for borders/dividers, not body text, to preserve contrast.\"\n    ]\n  },\n\n  \"palettes\": [\n    {\n      \"name\": \"Futuristic SaaS Indigo (Light + Dark)\",\n      \"style\": \"Tech-forward, trustworthy, gradient-friendly SaaS/blog UI with strong blues/indigos.[1][3][5]\",\n      \"light_mode\": {\n        \"background_primary\": \"#F9FAFF\",\n        \"background_alt\": \"#EDF2FF\",\n        \"surface\": \"#FFFFFF\",\n        \"text_primary\": \"#0F172A\",\n        \"text_muted\": \"#6B7280\",\n        \"primary\": \"#2563EB\",\n        \"primary_soft\": \"#DBEAFE\",\n        \"accent\": \"#6366F1\",\n        \"accent_soft\": \"#E0E7FF\",\n        \"link\": \"#1D4ED8\",\n        \"border_subtle\": \"#E5E7EB\",\n        \"border_strong\": \"#CBD5F5\",\n        \"feedback\": {\n          \"success\": \"#16A34A\",\n          \"success_soft\": \"#DCFCE7\",\n          \"warning\": \"#CA8A04\",\n          \"warning_soft\": \"#FEF3C7\",\n          \"error\": \"#DC2626\",\n          \"error_soft\": \"#FEE2E2\"\n        }\n      },\n      \"dark_mode\": {\n        \"background_primary\": \"#020617\",\n        \"background_alt\": \"#0B1120\",\n        \"surface\": \"#020617\",\n        \"surface_raised\": \"#111827\",\n        \"text_primary\": \"#E5E7EB\",\n        \"text_muted\": \"#9CA3AF\",\n        \"primary\": \"#60A5FA\",\n        \"primary_soft\": \"#1D3557\",\n        \"accent\": \"#818CF8\",\n        \"accent_soft\": \"#1E293B\",\n        \"link\": \"#93C5FD\",\n        \"border_subtle\": \"#1E293B\",\n        \"border_strong\": \"#334155\",\n        \"feedback\": {\n          \"success\": \"#4ADE80\",\n          \"success_soft\": \"#14532D\",\n          \"warning\": \"#FACC15\",\n          \"warning_soft\": \"#422006\",\n          \"error\": \"#F97373\",\n          \"error_soft\": \"#450A0A\"\n        }\n      },\n      \"wcag_notes\": {\n        \"body_text_on_bg\": \"Text_primary on background_primary in both modes is designed to exceed WCAG AA (and often AAA) for normal text when using the deep neutrals listed.[4][5]\",\n        \"primary_on_bg\": \"Primary on light backgrounds and its lighter tints on dark backgrounds should be checked, but combinations like #2563EB on #FFFFFF and #60A5FA on #020617 typically meet"
+      },
+      "delta": {
+        "role": "assistant",
+        "content": ""
+      },
+      "finish_reason": "length"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+import type { Metadata } from "next";
+
+import Container from "@/components/Container";
+import { locales, normalizeLocale, type Locale } from "@/lib/i18n";
+import { getAllCategories, getAllPosts } from "@/lib/posts";
+
+type Props = { params: { lang: Locale } };
+
+export function generateMetadata({ params }: Props): Metadata {
+  const lang = normalizeLocale(params.lang);
+  const alternates = Object.fromEntries(
+    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/categories`])
+  );
+  return {
+    title: "Categories",
+    description: "Browse TechSkillsThatPay posts by category.",
+    alternates: {
+      canonical: `https://techskillsthatpay.com/${lang}/categories`,
+      languages: { ...alternates, "x-default": "https://techskillsthatpay.com/en/categories" }
+    }
+  };
+}
+
+export default async function CategoriesPage({ params }: Props) {
+  const lang = normalizeLocale(params.lang);
+  const categories = await getAllCategories(lang);
+  const posts = await getAllPosts(lang);
+
+  const counts = categories.map((category) => ({
+    ...category,
+    count: posts.filter((post) => post.categorySlug === category.slug).length
+  }));
+
+  return (
+    <Container className="py-10">
+      <div className="overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-lg shadow-slate-200/70 dark:shadow-none">
+        <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+          Browse Topics
+        </p>
+        <h1 className="text-3xl font-bold text-text-primary">Categories</h1>
+        <p className="mt-2 text-text-secondary">
+          Pick a lane and dive into the most relevant playbooks.
+        </p>
+      </div>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {counts.map((category) => (
+          <a
+            key={category.slug}
+            href={`/${lang}/category/${category.slug}`}
+            className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            <div>
+              <p className="text-lg font-semibold text-text-primary">{category.label}</p>
+              <p className="text-sm text-text-secondary">{category.count} posts</p>
+            </div>
+            <span className="text-text-secondary" aria-hidden>
+              →
+            </span>
+          </a>
+        ))}
+      </div>
+    </Container>
+  );
+}

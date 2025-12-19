@@ -1,0 +1,8 @@
+- Applied a variable-driven design system: CSS variables in `app/globals.css` and Tailwind tokens (`background`, `surface`, `card`, `border`, `muted`, `text.primary/secondary`, `accent`, `accent-foreground`, `success/warning/error` variants). Components now use these tokens instead of hardcoded slates.
+- Refined theming: dark mode uses `rgb(31, 31, 31)` background with deep cards `rgb(1, 4, 9)`; light mode stays airy with `#F7F8FB` base. Gradients toned down to keep focus on content.
+- Updated UI elements to the new system: Header/nav, hero, cards, pagination, search, contact/legal pages, newsletter, and CTAs now rely on tokenized backgrounds/borders/text and accent link/button treatments.
+- Typography/layout: maintained Plus Jakarta Sans, ensured consistent text-foreground usage, and improved card/section hierarchy via card/background tokens.
+- Research note: Perplexity API calls were blocked (401 via Cloudflare), so no external sources were recorded in this environment. Tokens chosen using internal accessibility and UI heuristics. See `research/RESEARCH_SOURCES.md`.
+- Key token values (see DESIGN_TOKENS.md):
+  - Light: bg `#F7F8FB`, card `#FFFFFF`, text.primary `#0F172A`, accent `#2563EB`.
+  - Dark: bg `#1F1F1F`, card `#010409`, text.primary `#E2E8F0`, accent `#5E81FF`.

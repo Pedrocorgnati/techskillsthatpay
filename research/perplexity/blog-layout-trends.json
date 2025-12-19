@@ -1,0 +1,111 @@
+{
+  "id": "ea22e469-c35a-4742-b08e-66cda94a5a56",
+  "model": "sonar-pro",
+  "created": 1766098858,
+  "usage": {
+    "prompt_tokens": 87,
+    "completion_tokens": 1194,
+    "total_tokens": 1281,
+    "search_context_size": "low"
+  },
+  "citations": [
+    "https://elementor.com/blog/examples-of-blog-design-done-right/",
+    "https://www.bruceandeddy.com/website-layout-examples/",
+    "https://www.sitebuilderreport.com/inspiration/blog-design-examples",
+    "https://www.blogtyrant.com/blog-design/",
+    "https://www.marketermilk.com/blog/best-blog-designs",
+    "https://www.optimizepress.com/best-blog-designs/",
+    "https://www.happywebco.com/blog-posts/blog-design-inspiration-2025",
+    "https://www.shopify.com/blog/blog-design",
+    "https://www.wix.com/blog/best-blog-templates"
+  ],
+  "search_results": [
+    {
+      "title": "12 Examples of Blog Design Done Right in 2025: A Deep Dive into ...",
+      "url": "https://elementor.com/blog/examples-of-blog-design-done-right/",
+      "date": "2025-09-28",
+      "last_updated": "2025-12-18",
+      "snippet": "This article will explore 12 outstanding examples of blog design that are setting the standard for digital publishing. We'll dissect what makes them effective, ...",
+      "source": "web"
+    },
+    {
+      "title": "10 Website Layout Examples For 2025 Inspiration - Bruce & Eddy",
+      "url": "https://www.bruceandeddy.com/website-layout-examples/",
+      "date": "2025-06-11",
+      "last_updated": "2025-12-18",
+      "snippet": "Discover top website layout examples to inspire your design in 2025. Explore effective grid, F-patterns, and Z-patterns for a user-friendly site ...",
+      "source": "web"
+    },
+    {
+      "title": "Blog Design Examples: 40+ Well-Designed Websites (2025)",
+      "url": "https://www.sitebuilderreport.com/inspiration/blog-design-examples",
+      "date": "2025-01-03",
+      "last_updated": "2025-11-07",
+      "snippet": "A good blog design becomes a part of the stories you tell. See these examples of well-designed blogs to see how blog design can elevate the ...",
+      "source": "web"
+    },
+    {
+      "title": "21 Amazing Blog Design Examples to Inspire You in 2025",
+      "url": "https://www.blogtyrant.com/blog-design/",
+      "date": "2024-07-31",
+      "last_updated": "2025-01-06",
+      "snippet": "I'll share 21 amazing blog design inspirations and examples to spark your creativity. Plus, a list of the 9 key design tips you can use to make your overall ...",
+      "source": "web"
+    },
+    {
+      "title": "30 best blog designs that will inspire you in 2025 | Marketer Milk",
+      "url": "https://www.marketermilk.com/blog/best-blog-designs",
+      "date": "2025-06-22",
+      "last_updated": "2025-12-18",
+      "snippet": "We've browsed the web to find the best blog designs. From templates to real websites, here's our curated list to help inspire your next blog design.",
+      "source": "web"
+    },
+    {
+      "title": "18 Best Blog Designs You Need to See in 2025 - OptimizePress",
+      "url": "https://www.optimizepress.com/best-blog-designs/",
+      "date": "2025-03-04",
+      "last_updated": "2025-12-18",
+      "snippet": "Here are 18 beautiful blog designs that showcase the best of creativity, user experience and functionality for 2025.",
+      "source": "web"
+    },
+    {
+      "title": "30 Stunning Blog Designs to Inspire You in 2025 - Happy Web",
+      "url": "https://www.happywebco.com/blog-posts/blog-design-inspiration-2025",
+      "date": "2025-01-27",
+      "last_updated": "2025-02-20",
+      "snippet": "Discover 30 stunning blog designs for 2025 that inspire creativity and elevate user experience. Explore captivating layouts and visuals for ...",
+      "source": "web"
+    },
+    {
+      "title": "What Is Great Blog Design? 5 Blog Design Examples - Shopify",
+      "url": "https://www.shopify.com/blog/blog-design",
+      "date": "2025-11-18",
+      "last_updated": "2025-12-18",
+      "snippet": "Good design can keep readers on your blog longer, which could then improve core metrics like time on page and scroll depth. The better your ...",
+      "source": "web"
+    },
+    {
+      "title": "25 best blog templates for 2026 - Wix.com",
+      "url": "https://www.wix.com/blog/best-blog-templates",
+      "date": "2023-11-23",
+      "last_updated": "2025-12-17",
+      "snippet": "Below, we'll show you the best blog templates for 2025. All of them are completely customizable, providing you with valuable inspiration across ...",
+      "source": "web"
+    }
+  ],
+  "object": "chat.completion",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\n  \"summary\": {\n    \"overview\": \"Successful 2024–2025 blog layouts emphasize **readability-first design**, generous white space, clear hierarchy, simple navigation, and strategic CTAs that feel native to the reading flow.[1][4][5][7] Mobile-responsive, single-column reading experiences with supporting cards/grids for discovery are now the dominant pattern.[1][3][5]\",\n    \"primary_goals\": [\n      \"Maximize reading comfort and comprehension\",\n      \"Increase post discovery and session depth\",\n      \"Drive email signups, product trials, or purchases without disrupting reading\",\n      \"Meet modern accessibility expectations (WCAG 2.1 / 2.2–aligned)\"\n    ]\n  },\n\n  \"layout_patterns\": {\n    \"page_types\": {\n      \"blog_home_or_hub\": {\n        \"common_patterns\": [\n          \"Hero strip with latest or featured article (often 1–3 cards in a horizontal or 2–3 column grid).[3][5][6]\",\n          \"Below-hero **card grid** (masonry or uniform) of recent posts, filtered by category or tags.[3][5]\",\n          \"Sectioned layout: “Editor’s Picks”, “Latest”, “Trending”, optionally topic rows.[5][6]\",\n          \"Sticky global navbar with logo, core sections, search, and possibly a “Subscribe” or “Get started” CTA.[1][4][5]\"\n        ],\n        \"grid_recommendation\": {\n          \"desktop\": \"12-column grid; use 3 or 4 content columns for cards (e.g., 3-up cards + gutters) with 1120–1200px max content width.\",\n          \"tablet\": \"2-column grid for cards; stack sections vertically.\",\n          \"mobile\": \"Single column; cards become full-width stacked; navigation collapses to hamburger + search.\",\n          \"alignment\": \"Use left-aligned content with clear vertical rhythm; maintain consistent card aspect ratios where possible.[2][3]\"\n        },\n        \"key_components\": [\n          \"Global nav (logo left, primary links center/left, CTA right).[2][5]\",\n          \"Search box prominently visible on blog hub.[1][4][5]\",\n          \"Category filters or left-side sticky category list for discovery.[6]\",\n          \"Pagination or “Load more” button at the bottom (infinite scroll is used less for editorial SEO content).\"\n        ]\n      },\n      \"article_page\": {\n        \"common_patterns\": [\n          \"Single-column reading area with narrow measure and large line height for body text.[1][4][5]\",\n          \"Sticky or inline **table of contents** for long-form posts.[6]\",\n          \"Optional right sidebar on desktop for TOC, related posts, and subtle CTAs, while mobile collapses sidebar below content or into an in-page menu.[6]\",\n          \"Top-of-article metadata: title, dek/summary, author, date, reading time, category, social share.[4][6]\",\n          \"“Next/Previous” or “Related articles” section at the end of the post for content recirculation.[5][6]\"\n        ],\n        \"reading_flow\": [\n          \"Hero section (title, dek, meta, primary CTA if relevant).\",\n          \"Optional image or media directly under title if it adds context.\",\n          \"Body with clear heading hierarchy, short paragraphs, and mixed media (images, pull quotes, code, embeds) for scannability.[1][3][4][6]\",\n          \"Mid-article contextual CTAs (newsletter, product demo) after key value moments.[5][6]\",\n          \"End-of-article CTAs + related content row.\"\n        ]\n      }\n    },\n    \"visual_patterns\": {\n      \"F_pattern\": {\n        \"description\": \"Content and UI align to users’ scanning paths along top and left edges, suitable for article lists and text-heavy pages.[2]\",\n        \"usage\": [\n          \"Place logo, main nav, and primary CTA in the top-left/top-center.[2]\",\n          \"Use strong headings and lead paragraphs aligned to the left to catch the first vertical scan line.[2]\",\n          \"Place key CTAs (subscribe, download, next article) along the left column and early in the page.[2]\"\n        ]\n      },\n      \"Z_pattern\": {\n        \"description\": \"Z-shaped eye path (top-left → top-right → diagonal → bottom-left → bottom-right), effective for landing/lead-gen oriented posts and hero areas.[2]\",\n        \"usage\": [\n          \"Top-left: logo and blog label.\",\n          \"Top-right: primary CTA (subscribe, trial).\",\n          \"Diagonal: featured image or value proposition.\",\n          \"Bottom-right: secondary CTA or scroll cue into article/card grid.[2]\"\n        ]\n      },\n      \"magazine_style\": {\n        \"description\": \"Editorial / magazine layout mixing varied card sizes within a strong grid, for visually rich blogs.[2][3]\",\n        \"best_practices\": [\n          \"Maintain consistent grid and alignment even with varying card sizes.[2]\",\n          \"Use large visuals and bold headlines with clear typographic hierarchy.[2][3]\",\n          \"Reserve experimental layouts for hubs; keep article reading views simple and linear.\"\n        ]\n      }\n    }\n  },\n\n  \"typography\": {\n    \"scale_and_tokens\": {\n      \"base_font_size\": \"16–18px body on desktop, 16px on mobile for most blogs; many leading blogs lean toward 18px for comfort.[1][4][5]\",\n      \"headline_scale_example\": {\n        \"h1\": \"32–40px (1.8–2.2rem) with 1.1–1.2 line-height\",\n        \"h2\": \"24–28px (1"
+      },
+      "delta": {
+        "role": "assistant",
+        "content": ""
+      },
+      "finish_reason": "length"
+    }
+  ]
+}
