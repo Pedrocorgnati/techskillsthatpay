@@ -26,9 +26,9 @@ Final palette tuned for a tech career skills blog with strong readability, premi
 
 | Token | Hex |
 | --- | --- |
-| background | `#1F1F1F` |
-| surface | `#1F1F1F` |
-| card | `#010409` |
+| background | `#010409` |
+| surface | `#010409` |
+| card | `#1F1F1F` |
 | border | `#383C44` |
 | muted | `#262D37` |
 | text.primary | `#E2E8F0` |
