@@ -1,3 +1,5 @@
+<img width="1364" height="923" alt="image" src="https://github.com/user-attachments/assets/0aa1c794-9715-44bf-b2f1-1cd783401da5" />
+
 # TechSkillsThatPay Blog (Next.js + MDX)
 
 Full Next.js App Router blog for **techskillsthatpay.com** with MDX content, Tailwind CSS, and SEO baked in.
