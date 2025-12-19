@@ -21,6 +21,13 @@ export const contentStoreProvider =
   process.env.NEXT_PUBLIC_CONTENT_STORE_PROVIDER ??
   "fs";
 
+export const contentPublishProvider = process.env.CONTENT_PUBLISH_PROVIDER ?? "github";
+export const githubOwner = process.env.GITHUB_OWNER ?? "";
+export const githubRepo = process.env.GITHUB_REPO ?? "";
+export const githubToken = process.env.GITHUB_TOKEN ?? "";
+export const githubBranch = process.env.GITHUB_BRANCH ?? "main";
+export const publishMode = (process.env.PUBLISH_MODE ?? "commit") as "commit" | "pr";
+
 export const contactProvider = process.env.CONTACT_PROVIDER ?? "mock";
 export const contactFromEmail = process.env.CONTACT_FROM_EMAIL ?? "";
 export const contactToEmail = process.env.CONTACT_TO_EMAIL ?? "";

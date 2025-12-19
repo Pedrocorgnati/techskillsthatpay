@@ -7,6 +7,7 @@ out
 
 # env files
 .env
+.env.*
 .env.*.local
 .env.local
 .env.development.local
@@ -30,3 +31,30 @@ tsconfig.tsbuildinfo
 # lockfiles (keep npm lockfile)
 pnpm-lock.yaml
 yarn.lock
+
+# =========================
+# Desktop apps (Python)
+# =========================
+apps/desktop/**/.venv/
+apps/desktop/**/__pycache__/
+apps/desktop/**/*.pyc
+apps/desktop/**/.pytest_cache/
+apps/desktop/**/.mypy_cache/
+apps/desktop/**/.ruff_cache/
+apps/desktop/**/.DS_Store
+apps/desktop/**/Thumbs.db
+
+# Desktop generated data
+apps/desktop/**/outputs/
+apps/desktop/**/data/
+apps/desktop/**/logs/
+apps/desktop/**/tmp/
+
+# Desktop env
+apps/desktop/**/.env
+apps/desktop/**/.env.*
+
+# Desktop builds
+apps/desktop/**/dist/
+apps/desktop/**/build/
+apps/desktop/**/target/

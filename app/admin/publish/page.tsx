@@ -12,7 +12,6 @@ type GlobalPostInput = {
   author: string;
   affiliateDisclosure: boolean;
   date: string;
-  updated?: string;
 };
 
 type LocalizedPostInput = {
@@ -50,6 +49,8 @@ export default function PublishPage() {
     )
   );
   const [status, setStatus] = useState<string>("");
+  const [publishUrl, setPublishUrl] = useState<string>("");
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [error, setError] = useState<string>("");
   const [publishing, setPublishing] = useState(false);
   const [helperLang, setHelperLang] = useState<Locale>("en");
@@ -62,6 +63,8 @@ export default function PublishPage() {
 
   const handleSubmit = async () => {
     setStatus("");
+    setPublishUrl("");
+    setWarnings([]);
     setError("");
 
     if (!globalData.translationKey.trim()) {
@@ -83,11 +86,47 @@ export default function PublishPage() {
       if (!res.ok) {
         throw new Error(data.message || "Failed to publish");
       }
+      const resultUrl = data?.result?.prUrl || data?.result?.commitUrl;
+      setPublishUrl(resultUrl || "");
+      if (Array.isArray(data?.warnings)) {
+        setWarnings(data.warnings);
+      }
       setStatus("Published successfully.");
     } catch (err: any) {
       setError(err.message || "Failed to publish");
     } finally {
       setPublishing(false);
+    }
+  };
+
+  const handleImportJson = (content: string) => {
+    try {
+      const parsed = JSON.parse(content);
+      const nextGlobal = parsed.global ?? {};
+      const nextLocalized = parsed.localized ?? {};
+      if (!nextGlobal.translationKey) throw new Error("Missing global.translationKey");
+      setGlobalData({
+        translationKey: String(nextGlobal.translationKey || ""),
+        author: String(nextGlobal.author || ""),
+        affiliateDisclosure: Boolean(nextGlobal.affiliateDisclosure),
+        date: String(nextGlobal.date || "")
+      });
+      const merged = { ...localizedData };
+      locales.forEach((loc) => {
+        const localeData = nextLocalized[loc] ?? {};
+        merged[loc] = {
+          title: String(localeData.title || ""),
+          description: String(localeData.description || ""),
+          slug: String(localeData.slug || ""),
+          category: String(localeData.category || ""),
+          tags: Array.isArray(localeData.tags) ? localeData.tags.join(", ") : String(localeData.tags || ""),
+          content: String(localeData.content || "")
+        };
+      });
+      setLocalizedData(merged);
+      setStatus("Imported JSON successfully.");
+    } catch (err: any) {
+      setError(err.message || "Failed to import JSON");
     }
   };
 
@@ -139,8 +178,28 @@ export default function PublishPage() {
           disabled={publishing}
           className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-foreground shadow hover:bg-accent/90 disabled:opacity-50"
         >
-          {publishing ? "Publishing..." : "Publicar"}
+          {publishing ? "Publishing..." : "Publish (all languages)"}
         </button>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-4 text-sm">
+        <p className="text-text-secondary">
+          Import a Content Package JSON to prefill all 4 languages.
+        </p>
+        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border px-4 py-2 text-xs font-semibold text-text-primary shadow-sm">
+          Import JSON
+          <input
+            type="file"
+            accept="application/json"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const text = await file.text();
+              handleImportJson(text);
+              e.currentTarget.value = "";
+            }}
+          />
+        </label>
       </div>
       <div className="rounded-xl border border-border bg-muted px-4 py-2 text-xs text-text-secondary">
         <p>
@@ -148,6 +207,9 @@ export default function PublishPage() {
           {provider === "mock"
             ? "(in-memory only; changes are NOT persisted)"
             : "(writes to file system)"}
+        </p>
+        <p className="mt-1">
+          Publishing requires all 4 languages and sets <span className="font-semibold">updated</span> automatically.
         </p>
       </div>
 
@@ -177,15 +239,6 @@ export default function PublishPage() {
               type="date"
               value={globalData.date}
               onChange={(e) => setGlobalData({ ...globalData, date: e.target.value })}
-              className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="text-sm font-semibold text-text-primary">
-            Updated (optional)
-            <input
-              type="date"
-              value={globalData.updated || ""}
-              onChange={(e) => setGlobalData({ ...globalData, updated: e.target.value })}
               className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm"
             />
           </label>
@@ -329,6 +382,21 @@ export default function PublishPage() {
       </section>
 
       {status ? <p className="text-sm text-green-600">{status}</p> : null}
+      {publishUrl ? (
+        <p className="text-sm text-text-secondary">
+          Result:{" "}
+          <a className="text-blue-700 dark:text-blue-300" href={publishUrl} target="_blank" rel="noreferrer">
+            {publishUrl}
+          </a>
+        </p>
+      ) : null}
+      {warnings.length ? (
+        <div className="rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-text-primary">
+          {warnings.map((warning) => (
+            <p key={warning}>{warning}</p>
+          ))}
+        </div>
+      ) : null}
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
     </div>
   );

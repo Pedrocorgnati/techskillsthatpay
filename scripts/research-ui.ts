@@ -8,8 +8,11 @@ type Query = {
 };
 
 // Perplexity API key (can also be set via env PPLX_API_KEY)
-const API_KEY = process.env.PPLX_API_KEY || "REDACTED";
 const API_URL = "https://api.perplexity.ai/chat/completions";
+const API_KEY = process.env.PPLX_API_KEY;
+if (!API_KEY) {
+  throw new Error("Missing PPLX_API_KEY. Set it in your environment before running this script.");
+}
 
 const queries: Query[] = [
   {

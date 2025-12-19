@@ -85,6 +85,30 @@ It compiles MDX during request/build time on the server, keeping the App Router 
 - `CONTENT_STORE_PROVIDER` = `fs | mock` (default fs). `mock` is in-memory only; good for demos.
 - `NEXT_PUBLIC_CONTENT_STORE_PROVIDER` mirrors the provider for UI warnings.
 
+## Git-based publishing (Vercel-safe)
+Publishing via `/admin/publish` uses the GitHub API to commit MDX files into the repo, which triggers a Vercel deploy.
+- `CONTENT_PUBLISH_PROVIDER=github` (default)
+- `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_TOKEN` (fine-grained PAT with Contents RW; Pull Requests RW if PR mode)
+- `GITHUB_BRANCH=main`
+- `PUBLISH_MODE=commit | pr` (commit directly or open a PR)
+
+When any of these are missing in production, publish is blocked.
+
+### Creating a GitHub token
+1. GitHub → Settings → Developer Settings → Personal access tokens → Fine-grained tokens.
+2. Select the repo; grant **Contents: Read & Write**.
+3. If `PUBLISH_MODE=pr`, also grant **Pull Requests: Read & Write**.
+4. Copy token and set `GITHUB_TOKEN` in Vercel envs.
+
+### Admin publish flow
+1. Fill global fields (translationKey, author, date, affiliate disclosure).
+2. Fill all four languages (EN/PT/ES/IT).
+3. Click **Publish (all languages)**.
+4. A commit or PR is created and Vercel redeploys.
+
+### Import JSON
+Use **Import JSON** on `/admin/publish` to load a Content Package JSON with `global` and `localized` fields.
+
 ## Contact + providers
 - `/api/contact` uses a provider interface. Defaults to `CONTACT_PROVIDER=mock` (logs only). Future providers (`resend`, `sendgrid`) are scaffolded but require `CONTACT_API_KEY`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL`.
 - The contact form uses honeypot + simple rate-limit.
@@ -100,7 +124,16 @@ It compiles MDX during request/build time on the server, keeping the App Router 
 ## Env vars (see `.env.example`)
 - Admin: `ADMIN_ENABLED`, `ADMIN_AUTH_ENABLED`, `ADMIN_AUTH_USER`, `ADMIN_AUTH_PASS`
 - Content store: `CONTENT_STORE_PROVIDER`, `NEXT_PUBLIC_CONTENT_STORE_PROVIDER`
+- Publishing: `CONTENT_PUBLISH_PROVIDER`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_TOKEN`, `GITHUB_BRANCH`, `PUBLISH_MODE`
 - Contact: `CONTACT_PROVIDER`, `CONTACT_FROM_EMAIL`, `CONTACT_TO_EMAIL`, `CONTACT_API_KEY`
 - Analytics: `ANALYTICS_PROVIDER`, `GA4_ID`, `PLAUSIBLE_DOMAIN`
 - Ads: `ADSENSE_ENABLED`, `ADSENSE_PUBLISHER_ID`
 - Research: `PPLX_API_KEY`
+
+## Smoke test (manual)
+1. `npm run dev`
+2. Open `/admin/publish`
+3. Import a JSON package or fill all 4 languages
+4. Click Publish and verify commit/PR URL
+5. Check that `content/posts/{lang}/{slug}.mdx` changed in GitHub
+6. Confirm Vercel deploy completes and pages render
