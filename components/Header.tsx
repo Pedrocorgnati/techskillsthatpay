@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
-import type { Locale } from "@/lib/i18n";
+import { isLocale, type Locale } from "@/lib/i18n";
 
 const navItems = [
   { href: "", label: "Home" },
@@ -20,6 +20,8 @@ type Props = {
 
 export default function Header({ locale }: Props) {
   const pathname = usePathname();
+  const segments = pathname.split("/").filter(Boolean);
+  const isLanding = segments.length === 0 || (segments.length === 1 && isLocale(segments[0]));
 
   const buildHref = (path: string) => {
     if (!path) return "/";
@@ -63,7 +65,7 @@ export default function Header({ locale }: Props) {
             <span>Search</span>
             <span aria-hidden className="text-text-secondary">⌘K</span>
           </Link>
-          <LanguageSwitcher currentPath={pathname} locale={locale} />
+          {isLanding ? null : <LanguageSwitcher currentPath={pathname} locale={locale} />}
           <ThemeToggle />
         </div>
       </div>
@@ -87,7 +89,7 @@ export default function Header({ locale }: Props) {
           >
             Search
           </Link>
-          <LanguageSwitcher currentPath={pathname} locale={locale} />
+          {isLanding ? null : <LanguageSwitcher currentPath={pathname} locale={locale} />}
         </div>
       </nav>
     </header>

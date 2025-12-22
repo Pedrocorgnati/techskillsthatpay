@@ -1,15 +1,23 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 import Container from "@/components/Container";
 import NewsletterBox from "@/components/NewsletterBox";
 import Pagination from "@/components/Pagination";
 import PostCard from "@/components/PostCard";
-import type { Metadata } from "next";
-
 import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { getHtmlLang, normalizeLocale, type Locale, locales } from "@/lib/i18n";
 import { getAllPosts } from "@/lib/posts";
-import { getPreviewRobots, getSiteDescription, getSiteTitle } from "@/lib/seo";
+import { getPreviewRobots } from "@/lib/seo";
+import {
+  ELanguageCode,
+  formatTranslation,
+  getLanguageTag,
+  getPreferredLanguage,
+  getTranslationForLanguage,
+  resolveLanguage
+} from "@/libs/language-translations";
 
 const POSTS_PER_PAGE = 10;
 export const revalidate = 3600;
@@ -25,7 +33,13 @@ export function generateMetadata({ params, searchParams }: Props): Metadata {
   const pageParam = Array.isArray(searchParams?.page) ? searchParams?.page[0] : searchParams?.page;
   const page = Math.max(1, parseInt(pageParam || "1", 10));
   const isPaginated = page > 1;
-  const title = isPaginated ? `${getSiteTitle(lang)} (Page ${page})` : getSiteTitle(lang);
+  const language = resolveLanguage({
+    preferredLanguage: getPreferredLanguage(),
+    acceptLanguage: headers().get("accept-language")
+  });
+  const title = isPaginated
+    ? `${getTranslationForLanguage(language, "meta.landing.title")} (Page ${page})`
+    : getTranslationForLanguage(language, "meta.landing.title");
   const robots = getPreviewRobots() ?? (isPaginated ? { index: false, follow: true } : undefined);
   const alternates = Object.fromEntries(
     locales.map((loc) => [getHtmlLang(loc), `${getBaseUrlForLocale(loc)}/`])
@@ -33,17 +47,35 @@ export function generateMetadata({ params, searchParams }: Props): Metadata {
 
   return {
     title,
-    description: getSiteDescription(lang),
+    description: getTranslationForLanguage(language, "meta.landing.description"),
     robots,
     alternates: {
       canonical: `${baseUrl}/`,
       languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/` }
+    },
+    openGraph: {
+      title,
+      description: getTranslationForLanguage(language, "meta.landing.description"),
+      url: `${baseUrl}/`,
+      locale: getLanguageTag(language),
+      type: "website"
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: getTranslationForLanguage(language, "meta.landing.description")
     }
   };
 }
 
 export default async function HomePage({ params, searchParams }: Props) {
   const lang = normalizeLocale(params.lang);
+  const language = resolveLanguage({
+    preferredLanguage: getPreferredLanguage(),
+    acceptLanguage: headers().get("accept-language")
+  });
+  const t = (key: Parameters<typeof getTranslationForLanguage>[1], values?: Record<string, string | number>) =>
+    formatTranslation(getTranslationForLanguage(language, key), values);
   const pageParam = Array.isArray(searchParams?.page) ? searchParams?.page[0] : searchParams?.page;
   const page = Math.max(1, parseInt(pageParam || "1", 10));
   const posts = await getAllPosts(lang);
@@ -51,6 +83,11 @@ export default async function HomePage({ params, searchParams }: Props) {
   const start = (page - 1) * POSTS_PER_PAGE;
   const visible = posts.slice(start, start + POSTS_PER_PAGE);
   const latestUpdated = posts[0]?.updated ?? new Date().toISOString();
+  const formattedDate = new Intl.DateTimeFormat(getLanguageTag(language), {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  }).format(new Date(latestUpdated));
 
   return (
     <div className="bg-gradient-to-b from-background to-surface pb-16 pt-6">
@@ -63,43 +100,50 @@ export default async function HomePage({ params, searchParams }: Props) {
             </div>
             <div className="relative space-y-4">
               <p className="inline-flex items-center gap-2 rounded-full bg-slate-900 text-accent-foreground px-4 py-2 text-xs font-semibold uppercase tracking-widest">
-                TechSkillsThatPay
+                {t("landing.badge")}
               </p>
               <h1 className="text-3xl font-bold leading-tight text-text-primary sm:text-4xl">
-                Learn the tech skills that actually boost your salary — without wasting time.
+                {t("landing.hero.title")}
               </h1>
               <p className="text-lg text-text-secondary">
-                Roadmaps, course picks, and templates for breaking into high-paying tech roles. No
-                fluff, just what works.
+                {t("landing.hero.subtitle")}
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/courses"
                   className="rounded-full bg-gradient-to-r from-slate-900 via-slate-800 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
                 >
-                  Explore curated courses
+                  {t("landing.cta.primary")}
                 </Link>
                 <Link
                   href="/categories"
                   className="rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-text-primary shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
-                  Browse by category
+                  {t("landing.cta.secondary")}
                 </Link>
               </div>
               <div className="grid gap-3 rounded-2xl border border-border bg-card/80 p-4 text-sm text-text-secondary shadow-sm sm:grid-cols-3">
                 <div>
-                  <p className="text-xs uppercase tracking-widest text-text-secondary">Posts</p>
-                  <p className="text-xl font-semibold text-text-primary">{posts.length}+ playbooks</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-text-secondary">Focus</p>
-                  <p className="text-xl font-semibold text-text-primary">ROI-first skills</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-text-secondary">Latest update</p>
-                  <p className="text-xl font-semibold text-text-primary">
-                    {new Date(latestUpdated).toLocaleDateString()}
+                  <p className="text-xs uppercase tracking-widest text-text-secondary">
+                    {t("landing.stats.posts.label")}
                   </p>
+                  <p className="text-xl font-semibold text-text-primary">
+                    {t("landing.stats.posts.value", { count: posts.length })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-text-secondary">
+                    {t("landing.stats.focus.label")}
+                  </p>
+                  <p className="text-xl font-semibold text-text-primary">
+                    {t("landing.stats.focus.value")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-text-secondary">
+                    {t("landing.stats.updated.label")}
+                  </p>
+                  <p className="text-xl font-semibold text-text-primary">{formattedDate}</p>
                 </div>
               </div>
             </div>
@@ -113,15 +157,17 @@ export default async function HomePage({ params, searchParams }: Props) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
-                Latest Playbooks
+                {t("landing.latest.label")}
               </p>
-              <h2 className="text-2xl font-semibold text-text-primary">Fresh, evergreen guides</h2>
+              <h2 className="text-2xl font-semibold text-text-primary">
+                {t("landing.latest.heading")}
+              </h2>
             </div>
             <Link
               href="/search"
               className="text-sm font-semibold text-accent transition hover:text-accent/80"
             >
-              Search posts →
+              {t("landing.latest.searchLink")}
             </Link>
           </div>
           <div className="grid gap-6 md:grid-cols-2">

@@ -1,57 +1,86 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 import AffiliateCTA from "@/components/AffiliateCTA";
 import Container from "@/components/Container";
 import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { getHtmlLang, locales, normalizeLocale, type Locale } from "@/lib/i18n";
 import { getPreviewRobots } from "@/lib/seo";
+import {
+  getLanguageTag,
+  getPreferredLanguage,
+  getTranslationForLanguage,
+  resolveLanguage
+} from "@/libs/language-translations";
 
 type Props = { params: { lang: Locale } };
 
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
   const baseUrl = getBaseUrlForLocale(lang);
+  const language = resolveLanguage({
+    preferredLanguage: getPreferredLanguage(),
+    acceptLanguage: headers().get("accept-language")
+  });
+  const title = getTranslationForLanguage(language, "meta.courses.title");
+  const description = getTranslationForLanguage(language, "meta.courses.description");
   const alternates = Object.fromEntries(
     locales.map((loc) => [getHtmlLang(loc), `${getBaseUrlForLocale(loc)}/courses`])
   );
   return {
-    title: "Courses",
-    description: "Curated affiliate-friendly courses with strong ROI for tech careers.",
+    title,
+    description,
     robots: getPreviewRobots(),
     alternates: {
       canonical: `${baseUrl}/courses`,
       languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/courses` }
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${baseUrl}/courses`,
+      locale: getLanguageTag(language),
+      type: "website"
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description
     }
   };
 }
 
-const coursePicks = [
-  {
-    title: "Python for Career Switchers",
-    description: "A practical Python track with projects focused on automating business workflows.",
-    href: "https://example.com/aff/python"
-  },
-  {
-    title: "Cloud Foundations to Architect",
-    description: "Hands-on AWS labs that map directly to real-world roles and certifications.",
-    href: "https://example.com/aff/cloud"
-  },
-  {
-    title: "Security Analyst Jumpstart",
-    description: "Blue-team labs, SIEM practice, and incident response fundamentals.",
-    href: "https://example.com/aff/cyber"
-  }
-];
-
 export default function CoursesPage({ params }: Props) {
   normalizeLocale(params.lang);
+  const language = resolveLanguage({
+    preferredLanguage: getPreferredLanguage(),
+    acceptLanguage: headers().get("accept-language")
+  });
+  const t = (key: Parameters<typeof getTranslationForLanguage>[1]) =>
+    getTranslationForLanguage(language, key);
+  const coursePicks = [
+    {
+      title: t("courses.item1.title"),
+      description: t("courses.item1.description"),
+      href: "https://example.com/aff/python"
+    },
+    {
+      title: t("courses.item2.title"),
+      description: t("courses.item2.description"),
+      href: "https://example.com/aff/cloud"
+    },
+    {
+      title: t("courses.item3.title"),
+      description: t("courses.item3.description"),
+      href: "https://example.com/aff/cyber"
+    }
+  ];
   return (
     <Container className="py-10">
       <div className="overflow-hidden rounded-3xl border border-border bg-card p-8 shadow-lg shadow-slate-200/70 dark:shadow-none">
-        <h1 className="text-3xl font-bold text-text-primary">Courses we recommend</h1>
+        <h1 className="text-3xl font-bold text-text-primary">{t("courses.heading")}</h1>
         <p className="mt-2 text-text-secondary">
-          Affiliate-friendly picks with a clear ROI narrative. We only feature courses we&apos;d use
-          ourselves or recommend to friends.
+          {t("courses.intro")}
         </p>
         <div className="mt-8 grid gap-6 md:grid-cols-2">
           {coursePicks.map((course) => (
@@ -60,7 +89,7 @@ export default function CoursesPage({ params }: Props) {
               title={course.title}
               description={course.description}
               href={course.href}
-              buttonLabel="View course"
+              buttonLabel={t("courses.ctaLabel")}
             />
           ))}
         </div>
