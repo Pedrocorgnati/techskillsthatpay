@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
+    "seo:check": "ts-node scripts/seo-check.ts",
     "research": "ts-node scripts/research-ui.ts"
   },
   "dependencies": {
