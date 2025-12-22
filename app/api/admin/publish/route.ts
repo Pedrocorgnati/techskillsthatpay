@@ -10,7 +10,9 @@ import { getContentStore } from "@/lib/storage/contentStore";
 type GlobalPostInput = {
   translationKey: string;
   author: string;
+  authorBio?: string;
   coverImage: string;
+  coverImageAlt?: string;
   affiliateDisclosure: boolean;
   date: string;
 };
@@ -18,10 +20,22 @@ type GlobalPostInput = {
 type LocalizedPostInput = {
   title: string;
   description: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  ogImage?: string;
+  canonicalOverride?: string;
+  noindex?: boolean;
   slug: string;
   category: string;
   tags: string | string[];
   keywords?: string | string[];
+  primaryKeyword?: string;
+  secondaryKeywords?: string | string[];
+  searchIntent?: string;
+  serpFeature?: string;
+  contentCluster?: string;
+  internalLinks?: string | string[];
+  externalCitations?: string | string[];
   content: string;
 };
 
@@ -54,44 +68,70 @@ function rateLimited(ip: string) {
 }
 
 function normalizeTags(tags: string | string[]) {
-  const list = Array.isArray(tags)
-    ? tags.map((t) => String(t))
-    : String(tags)
-        .split(",")
-        .map((t) => t.trim());
-  return list.filter(Boolean);
+  return normalizeList(tags);
 }
 
 function normalizeKeywords(keywords: string | string[] | undefined) {
   if (!keywords) return [];
-  const list = Array.isArray(keywords)
-    ? keywords.map((k) => String(k))
-    : String(keywords)
+  return normalizeList(keywords);
+}
+
+function normalizeList(values: string | string[]) {
+  const list = Array.isArray(values)
+    ? values.map((value) => String(value))
+    : String(values)
         .split(",")
-        .map((k) => k.trim());
+        .map((value) => value.trim());
   return list.filter(Boolean);
+}
+
+function escapeYaml(value: string) {
+  return value.replace(/"/g, '\\"');
+}
+
+function formatYamlList(values: string[]) {
+  return `[${values.map((value) => `"${escapeYaml(value)}"`).join(", ")}]`;
 }
 
 function buildFrontmatter(global: GlobalPostInput, local: LocalizedPostInput, updated: string) {
   const tagsArray = normalizeTags(local.tags);
   const keywordArray = normalizeKeywords(local.keywords);
-  const keywordLine = keywordArray.length
-    ? `keywords: [${keywordArray.map((k) => `"${k}"`).join(", ")}]\n`
-    : "";
+  const secondaryKeywords = local.secondaryKeywords
+    ? normalizeList(local.secondaryKeywords)
+    : [];
+  const internalLinks = local.internalLinks ? normalizeList(local.internalLinks) : [];
+  const externalCitations = local.externalCitations ? normalizeList(local.externalCitations) : [];
 
-  return `---
-title: "${local.title}"
-description: "${local.description}"
-date: "${global.date}"
-updated: "${updated}"
-tags: [${tagsArray.map((t) => `"${t}"`).join(", ")}]
-${keywordLine}coverImage: "${global.coverImage}"
-category: "${local.category}"
-slug: "${local.slug}"
-author: "${global.author}"
-translationKey: "${global.translationKey}"
-affiliateDisclosure: ${global.affiliateDisclosure}
----`;
+  const lines = [
+    `title: "${escapeYaml(local.title)}"`,
+    `description: "${escapeYaml(local.description)}"`,
+    local.seoTitle ? `seoTitle: "${escapeYaml(local.seoTitle)}"` : null,
+    local.seoDescription ? `seoDescription: "${escapeYaml(local.seoDescription)}"` : null,
+    local.ogImage ? `ogImage: "${escapeYaml(local.ogImage)}"` : null,
+    local.canonicalOverride ? `canonicalOverride: "${escapeYaml(local.canonicalOverride)}"` : null,
+    typeof local.noindex === "boolean" ? `noindex: ${local.noindex}` : null,
+    `date: "${global.date}"`,
+    `updated: "${updated}"`,
+    `tags: ${formatYamlList(tagsArray)}`,
+    keywordArray.length ? `keywords: ${formatYamlList(keywordArray)}` : null,
+    local.primaryKeyword ? `primaryKeyword: "${escapeYaml(local.primaryKeyword)}"` : null,
+    secondaryKeywords.length ? `secondaryKeywords: ${formatYamlList(secondaryKeywords)}` : null,
+    local.searchIntent ? `searchIntent: "${escapeYaml(local.searchIntent)}"` : null,
+    local.serpFeature ? `serpFeature: "${escapeYaml(local.serpFeature)}"` : null,
+    local.contentCluster ? `contentCluster: "${escapeYaml(local.contentCluster)}"` : null,
+    internalLinks.length ? `internalLinks: ${formatYamlList(internalLinks)}` : null,
+    externalCitations.length ? `externalCitations: ${formatYamlList(externalCitations)}` : null,
+    `coverImage: "${escapeYaml(global.coverImage)}"`,
+    global.coverImageAlt ? `coverImageAlt: "${escapeYaml(global.coverImageAlt)}"` : null,
+    `category: "${escapeYaml(local.category)}"`,
+    `slug: "${escapeYaml(local.slug)}"`,
+    `author: "${escapeYaml(global.author)}"`,
+    global.authorBio ? `authorBio: "${escapeYaml(global.authorBio)}"` : null,
+    `translationKey: "${escapeYaml(global.translationKey)}"`,
+    `affiliateDisclosure: ${global.affiliateDisclosure}`
+  ].filter(Boolean);
+
+  return `---\n${lines.join("\n")}\n---`;
 }
 
 function validatePayload(payload: Payload): ValidationResult {
@@ -104,6 +144,9 @@ function validatePayload(payload: Payload): ValidationResult {
   if (!payload?.global?.author?.trim()) {
     errors.push("author is required.");
   }
+  if (!payload?.global?.authorBio?.trim()) {
+    warnings.push("authorBio is missing. Add a short author bio for E-E-A-T signals.");
+  }
   if (!payload?.global?.coverImage?.trim()) {
     errors.push("coverImage is required.");
   } else {
@@ -115,6 +158,9 @@ function validatePayload(payload: Payload): ValidationResult {
     } catch {
       errors.push("coverImage must be a valid URL.");
     }
+  }
+  if (!payload?.global?.coverImageAlt?.trim()) {
+    warnings.push("coverImageAlt is missing. Provide alt text for the cover image.");
   }
   if (!payload?.global?.date?.trim()) {
     errors.push("date is required.");
@@ -138,6 +184,46 @@ function validatePayload(payload: Payload): ValidationResult {
 
     const tagsArray = normalizeTags(data.tags);
     if (!tagsArray.length) errors.push(`${locale}: tags are required.`);
+    if (!data.seoTitle?.trim()) warnings.push(`${locale}: seoTitle is missing.`);
+    if (!data.seoDescription?.trim()) warnings.push(`${locale}: seoDescription is missing.`);
+    if (!data.primaryKeyword?.trim()) warnings.push(`${locale}: primaryKeyword is missing.`);
+    const secondaryKeywords = data.secondaryKeywords
+      ? normalizeList(data.secondaryKeywords)
+      : [];
+    if (secondaryKeywords.length < 3) {
+      warnings.push(`${locale}: add at least 3 secondaryKeywords.`);
+    }
+    if (!data.searchIntent?.trim()) warnings.push(`${locale}: searchIntent is missing.`);
+    if (!data.serpFeature?.trim()) warnings.push(`${locale}: serpFeature is missing.`);
+    if (!data.contentCluster?.trim()) warnings.push(`${locale}: contentCluster is missing.`);
+    const internalLinks = data.internalLinks ? normalizeList(data.internalLinks) : [];
+    if (!internalLinks.length) {
+      warnings.push(`${locale}: internalLinks missing (add 2-4 internal links).`);
+    }
+    const externalCitations = data.externalCitations ? normalizeList(data.externalCitations) : [];
+    if (!externalCitations.length) {
+      warnings.push(`${locale}: externalCitations missing (add 2-4 reputable sources).`);
+    }
+    if (data.canonicalOverride) {
+      try {
+        const url = new URL(data.canonicalOverride);
+        if (!["http:", "https:"].includes(url.protocol)) {
+          errors.push(`${locale}: canonicalOverride must be a valid http(s) URL.`);
+        }
+      } catch {
+        errors.push(`${locale}: canonicalOverride must be a valid URL.`);
+      }
+    }
+    if (data.ogImage) {
+      try {
+        const url = new URL(data.ogImage);
+        if (!["http:", "https:"].includes(url.protocol)) {
+          errors.push(`${locale}: ogImage must be a valid http(s) URL.`);
+        }
+      } catch {
+        errors.push(`${locale}: ogImage must be a valid URL.`);
+      }
+    }
 
     if (locale === "en") {
       const accents = (data.content.match(accentRegex) || []).length;

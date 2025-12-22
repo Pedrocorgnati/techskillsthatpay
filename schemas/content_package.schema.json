@@ -10,7 +10,9 @@
       "properties": {
         "translationKey": {"type": "string"},
         "author": {"type": "string"},
+        "authorBio": {"type": "string"},
         "coverImage": {"type": "string"},
+        "coverImageAlt": {"type": "string"},
         "affiliateDisclosure": {"type": "boolean"},
         "date": {"type": "string"},
         "blogUrl": {"type": "string"},
@@ -38,9 +40,36 @@
       "properties": {
         "title": {"type": "string"},
         "description": {"type": "string"},
+        "seoTitle": {"type": "string"},
+        "seoDescription": {"type": "string"},
+        "ogImage": {"type": "string"},
+        "canonicalOverride": {"type": "string"},
+        "noindex": {"type": "boolean"},
         "slug": {"type": "string"},
         "content": {"type": "string"},
         "keywords": {
+          "anyOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
+        "primaryKeyword": {"type": "string"},
+        "secondaryKeywords": {
+          "anyOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
+        "searchIntent": {"type": "string"},
+        "serpFeature": {"type": "string"},
+        "contentCluster": {"type": "string"},
+        "internalLinks": {
+          "anyOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
+        "externalCitations": {
           "anyOf": [
             {"type": "array", "items": {"type": "string"}},
             {"type": "string"}
