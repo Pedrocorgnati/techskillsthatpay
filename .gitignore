@@ -27,6 +27,7 @@ pnpm-debug.log*
 .eslintcache
 coverage
 tsconfig.tsbuildinfo
+.venv
 
 # lockfiles (keep npm lockfile)
 pnpm-lock.yaml
