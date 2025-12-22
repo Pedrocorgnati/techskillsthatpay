@@ -8,10 +8,20 @@ export function GET() {
   const host = headers().get("host") || "";
   const locale = getLocaleFromHost(host);
   const baseUrl = getBaseUrlForLocale(locale);
-  const body = `User-agent: *
+  const isPreview = process.env.VERCEL_ENV === "preview";
+  const hostName = baseUrl.replace("https://", "");
+  const body = isPreview
+    ? `User-agent: *
+Disallow: /
+Host: ${hostName}
+`
+    : `User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api/admin
+Disallow: /api/
 Sitemap: ${baseUrl}/sitemap.xml
-Host: ${baseUrl.replace("https://", "")}
+Host: ${hostName}
 `;
 
   return new Response(body, {
