@@ -1,4 +1,5 @@
-const env = process.env;
+const env =
+  typeof process !== "undefined" && process.env ? process.env : ({} as NodeJS.ProcessEnv);
 
 export const LOCALES = ["en", "pt", "es", "it"] as const;
 export type Locale = (typeof LOCALES)[number];
