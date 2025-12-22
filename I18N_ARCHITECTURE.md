@@ -1,10 +1,19 @@
 # I18N Architecture
 
 - Supported locales: `en`, `pt`, `es`, `it` (`lib/i18n.ts`). `defaultLocale = en`.
-- URL structure: all routes are prefixed with the locale: `/en/...`, `/pt/...`, `/es/...`, `/it/...`.
+- Domain routing (`lib/domainRouting.ts`):
+  - en → `techskillsthatpay.com`
+  - pt → `techskillsthatpay.com.br`
+  - es → `techskillsthatpay.es`
+  - it → `techskillsthatpay.it`
+  - Override with `DOMAIN_*` / `NEXT_PUBLIC_DOMAIN_*`.
+- URL structure:
+  - Production domains use clean paths (no locale prefix).
+  - Internal routes remain under `app/[lang]/...` and are reached via middleware rewrite.
 - Middleware (`middleware.ts`):
-  - Detects locale via cookie `locale`, then `Accept-Language`, fallback `en`.
-  - Redirects any non-prefixed route to `/{detectedLocale}` (307). Ignores `_next`, `api`, and static files.
+  - If host is a mapped domain: rewrite `/{path}` → `/{locale}/{path}`.
+  - If path already has a locale prefix, redirect to clean URL (301).
+  - If host is localhost/unknown: keep path-based locale behavior with cookie/Accept-Language fallback.
 - Routing:
   - Pages live under `app/[lang]/...` (home, posts, category, tag, search, about, privacy, disclosure, contact, courses, categories).
   - Root `app/page.tsx` redirects to `/en`.
@@ -16,7 +25,7 @@
   - `lib/posts.ts` loads MDX per locale; posts carry `locale`, `translationKey`, `author`, and other frontmatter.
   - Helpers: locale-scoped `getAllPosts(locale?)`, `getAllCategories(locale?)`, `getAllTags(locale?)`, and `getTranslationsFor(translationKey)`.
 - SEO:
-  - Layout adds `lang` attribute; per-page metadata uses canonical + hreflang alternates for locales.
+  - Layout adds `lang` attribute; per-page metadata uses domain-aware canonical + hreflang alternates.
   - JSON-LD `BlogPosting` includes `inLanguage`.
   - Sitemap (`app/sitemap.ts`) lists all locales for static pages, posts, categories, tags.
 - Theme/layout:
