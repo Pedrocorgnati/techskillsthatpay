@@ -3,7 +3,8 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 
-import { defaultLocale, isLocale, locales, normalizeLocale } from "@/lib/i18n";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
+import { defaultLocale, isLocale, locales } from "@/lib/i18n";
 
 type Props = {
   currentPath?: string;
@@ -23,15 +24,12 @@ export default function LanguageSwitcher({ currentPath }: Props) {
 
   const handleChange = (lang: string) => {
     const params = searchParams.toString();
-    const nextSegments = [...segments];
-    if (nextSegments[0] && isLocale(nextSegments[0])) {
-      nextSegments[0] = lang;
-    } else {
-      nextSegments.unshift(lang);
-    }
-    const nextPath = "/" + nextSegments.join("/");
+    const rest = segments[0] && isLocale(segments[0]) ? segments.slice(1) : segments;
+    const nextPath = "/" + rest.join("/");
+    const baseUrl = getBaseUrlForLocale(lang as any);
     document.cookie = `locale=${lang}; path=/; max-age=${60 * 60 * 24 * 365}`;
-    router.push(params ? `${nextPath}?${params}` : nextPath);
+    const target = `${baseUrl}${nextPath || "/"}`;
+    router.push(params ? `${target}?${params}` : target);
   };
 
   return (

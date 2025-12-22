@@ -1,6 +1,8 @@
-export const locales = ["en", "pt", "es", "it"] as const;
-export type Locale = (typeof locales)[number];
-export const defaultLocale: Locale = "en";
+import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/lib/domainRouting";
+
+export const locales = LOCALES;
+export type { Locale };
+export const defaultLocale: Locale = DEFAULT_LOCALE;
 
 export function isLocale(value: string): value is Locale {
   return (locales as readonly string[]).includes(value);

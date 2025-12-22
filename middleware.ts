@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { adminAuthEnabled, adminAuthPass, adminAuthUser, adminEnabled } from "@/lib/config";
+import { getLocaleFromHost, isMappedDomain } from "@/lib/domainRouting";
 import { defaultLocale, isLocale, normalizeLocale } from "@/lib/i18n";
 
 const PUBLIC_FILE = /\.(.*)$/;
@@ -24,6 +25,9 @@ function notFound() {
 
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
+  const host = request.headers.get("host") || "";
+  const mappedHost = isMappedDomain(host);
+  const hostLocale = getLocaleFromHost(host);
 
   const isBot = BOT_UA.test(request.headers.get("user-agent") || "");
   const hasNoLocaleFlag = searchParams.get("nolocale") === "1";
@@ -58,6 +62,22 @@ export function middleware(request: NextRequest) {
     const res = NextResponse.next();
     res.cookies.set("locale", defaultLocale, { path: "/", maxAge: 60 * 60 * 24 * 365 });
     return res;
+  }
+
+  if (mappedHost) {
+    if (hasLocale) {
+      const pathLocale = segments[0];
+      const rest = `/${segments.slice(1).join("/")}`;
+      if (pathLocale === hostLocale) {
+        const redirectUrl = new URL(rest === "/" ? "/" : rest, request.url);
+        return NextResponse.redirect(redirectUrl, { status: 301 });
+      }
+      const redirectUrl = new URL(rest === "/" ? "/" : rest, request.url);
+      return NextResponse.redirect(redirectUrl, { status: 301 });
+    }
+
+    const targetPath = `/${hostLocale}${pathname}`;
+    return NextResponse.rewrite(new URL(targetPath, request.url));
   }
 
   if (hasLocale) {
