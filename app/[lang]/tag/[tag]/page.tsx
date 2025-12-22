@@ -36,19 +36,18 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
   const baseUrl = getBaseUrlForLocale(lang);
   const url = `${baseUrl}/tag/${tag.slug}`;
-  const alternates = Object.fromEntries(
-    (
-      await Promise.all(
-        locales.map(async (loc) => {
-          const list = await getAllTags(loc);
-          const match = list.find((item) => item.slug === tag.slug);
-          if (!match) return null;
-          return [getHtmlLang(loc), `${getBaseUrlForLocale(loc)}/tag/${match.slug}`] as const;
-        })
-      )
-    ).filter(Boolean) as Array<[string, string]>
-  );
-  const xDefault = alternates.find(([key]) => key === getHtmlLang("en"))?.[1];
+  const alternateEntries = (
+    await Promise.all(
+      locales.map(async (loc) => {
+        const list = await getAllTags(loc);
+        const match = list.find((item) => item.slug === tag.slug);
+        if (!match) return null;
+        return [getHtmlLang(loc), `${getBaseUrlForLocale(loc)}/tag/${match.slug}`] as const;
+      })
+    )
+  ).filter(Boolean) as Array<[string, string]>;
+  const alternates = Object.fromEntries(alternateEntries);
+  const xDefault = alternateEntries.find(([key]) => key === getHtmlLang("en"))?.[1];
   const pageParam = Array.isArray(searchParams?.page) ? searchParams?.page[0] : searchParams?.page;
   const page = Math.max(1, parseInt(pageParam || "1", 10));
   const posts = (await getAllPosts(lang)).filter((post) =>
@@ -67,7 +66,9 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     robots,
     alternates: {
       canonical: url,
-      languages: alternates.length ? { ...Object.fromEntries(alternates), ...(xDefault ? { "x-default": xDefault } : {}) } : undefined
+      languages: alternateEntries.length
+        ? { ...alternates, ...(xDefault ? { "x-default": xDefault } : {}) }
+        : undefined
     },
     openGraph: {
       title,

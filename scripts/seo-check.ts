@@ -1,8 +1,8 @@
-import { getBaseUrlForLocale } from "../lib/domainRouting";
-import { getHtmlLang, locales, type Locale } from "../lib/i18n";
-import { getAllPosts, getTranslationsFor } from "../lib/posts";
-import { buildPostJsonLd } from "../lib/seo";
-import { buildLocaleSitemap } from "../lib/sitemap";
+import { getBaseUrlForLocale } from "../lib/domainRouting.ts";
+import { getHtmlLang, locales, type Locale } from "../lib/i18n.ts";
+import { getAllPosts, getTranslationsFor } from "../lib/posts.ts";
+import { buildPostJsonLd } from "../lib/seo.ts";
+import { buildLocaleSitemap } from "../lib/sitemap.ts";
 
 type CheckResult = {
   errors: string[];

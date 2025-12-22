@@ -1,21 +1,21 @@
-import "server-only";
+void import("server-only").catch(() => null);
 
 import fs from "fs/promises";
 import matter from "gray-matter";
 import { compileMDX } from "next-mdx-remote/rsc";
 import path from "path";
 import readingTime from "reading-time";
-import { cache } from "react";
+import React from "react";
 import remarkGfm from "remark-gfm";
 import slugify from "slugify";
 
-import { mdxComponents } from "@/lib/mdx-components";
-import { logError } from "@/lib/logger";
-import { locales, type Locale } from "@/lib/i18n";
-import type { Post, PostFrontmatter } from "@/lib/types";
+import { logError } from "./logger.ts";
+import { locales, type Locale } from "./i18n.ts";
+import type { Post, PostFrontmatter } from "./types.ts";
 
 const POSTS_PATH = path.join(process.cwd(), "content", "posts");
 
+const cache = React.cache ?? (<T extends (...args: any[]) => any>(fn: T) => fn);
 let cachedPosts: Post[] | null = null;
 
 const slugOptions = { lower: true, strict: true, trim: true };
@@ -148,6 +148,7 @@ export const getCompiledPost = cache(async (locale: Locale, slug: string) => {
     return null;
   }
 
+  const { mdxComponents } = await import("./mdx-components.tsx");
   const { content } = await compileMDX({
     source: post.content,
     options: {

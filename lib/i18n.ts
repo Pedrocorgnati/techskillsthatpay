@@ -1,4 +1,4 @@
-import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/lib/domainRouting";
+import { DEFAULT_LOCALE, LOCALES, type Locale } from "./domainRouting.ts";
 
 export const locales = LOCALES;
 export type { Locale };

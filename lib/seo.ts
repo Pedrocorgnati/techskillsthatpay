@@ -1,6 +1,6 @@
-import type { Post } from "@/lib/types";
-import { getBaseUrlForLocale } from "@/lib/domainRouting";
-import { getHtmlLang, getOgLocale, type Locale } from "@/lib/i18n";
+import type { Post } from "./types.ts";
+import { getBaseUrlForLocale } from "./domainRouting.ts";
+import { getHtmlLang, getOgLocale, type Locale } from "./i18n.ts";
 
 export const SITE_NAME = "TechSkillsThatPay";
 export const SITE_TWITTER = "@techskillsthatpay";

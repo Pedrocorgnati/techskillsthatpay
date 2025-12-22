@@ -1,7 +1,7 @@
-import { getBaseUrlForLocale } from "@/lib/domainRouting";
-import { getHtmlLang, locales, type Locale } from "@/lib/i18n";
-import { getAllCategories, getAllPosts, getAllTags } from "@/lib/posts";
-import { shouldIndexCollection } from "@/lib/seo";
+import { getBaseUrlForLocale } from "./domainRouting.ts";
+import { getHtmlLang, locales, type Locale } from "./i18n.ts";
+import { getAllCategories, getAllPosts, getAllTags } from "./posts.ts";
+import { shouldIndexCollection } from "./seo.ts";
 
 const STATIC_ROUTES = ["", "courses", "about", "privacy", "disclosure", "contact", "categories"];
 const DEFAULT_LASTMOD = "2024-01-01";

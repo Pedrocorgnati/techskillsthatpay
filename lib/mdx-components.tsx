@@ -2,9 +2,9 @@ import type { AnchorHTMLAttributes, ReactNode } from "react";
 
 import Link from "next/link";
 
-import AffiliateCTA from "@/components/AffiliateCTA";
-import Callout from "@/components/Callout";
-import NewsletterBox from "@/components/NewsletterBox";
+import AffiliateCTA from "../components/AffiliateCTA.tsx";
+import Callout from "../components/Callout.tsx";
+import NewsletterBox from "../components/NewsletterBox.tsx";
 
 type AnchorProps = AnchorHTMLAttributes<HTMLAnchorElement> & { children?: ReactNode };
 

@@ -1,7 +1,7 @@
-import { getBaseUrlForLocale } from "@/lib/domainRouting";
-import { getHtmlLang, type Locale } from "@/lib/i18n";
-import { getAllPosts } from "@/lib/posts";
-import { getSiteDescription, getSiteTitle, SITE_NAME } from "@/lib/seo";
+import { getBaseUrlForLocale } from "./domainRouting.ts";
+import { getHtmlLang, type Locale } from "./i18n.ts";
+import { getAllPosts } from "./posts.ts";
+import { getSiteDescription, getSiteTitle, SITE_NAME } from "./seo.ts";
 
 function escapeXml(value: string) {
   return value
