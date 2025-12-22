@@ -10,6 +10,9 @@ const provider = process.env.NEXT_PUBLIC_CONTENT_STORE_PROVIDER || "fs";
 type GlobalPostInput = {
   translationKey: string;
   author: string;
+  authorBio: string;
+  coverImage: string;
+  coverImageAlt: string;
   affiliateDisclosure: boolean;
   date: string;
 };
@@ -17,18 +20,44 @@ type GlobalPostInput = {
 type LocalizedPostInput = {
   title: string;
   description: string;
+  seoTitle: string;
+  seoDescription: string;
+  ogImage: string;
+  canonicalOverride: string;
+  noindex: boolean;
   slug: string;
   category: string;
   tags: string;
+  keywords: string;
+  primaryKeyword: string;
+  secondaryKeywords: string;
+  searchIntent: string;
+  serpFeature: string;
+  contentCluster: string;
+  internalLinks: string;
+  externalCitations: string;
   content: string;
 };
 
 const emptyLocalized: LocalizedPostInput = {
   title: "",
   description: "",
+  seoTitle: "",
+  seoDescription: "",
+  ogImage: "",
+  canonicalOverride: "",
+  noindex: false,
   slug: "",
   category: "",
   tags: "",
+  keywords: "",
+  primaryKeyword: "",
+  secondaryKeywords: "",
+  searchIntent: "",
+  serpFeature: "",
+  contentCluster: "",
+  internalLinks: "",
+  externalCitations: "",
   content: ""
 };
 
@@ -36,6 +65,9 @@ export default function PublishPage() {
   const [globalData, setGlobalData] = useState<GlobalPostInput>({
     translationKey: "",
     author: "",
+    authorBio: "",
+    coverImage: "",
+    coverImageAlt: "",
     affiliateDisclosure: false,
     date: ""
   });
@@ -57,7 +89,11 @@ export default function PublishPage() {
   const [helperOutput, setHelperOutput] = useState<string>("");
   const [helperStatus, setHelperStatus] = useState<string>("");
 
-  const handleLocalizedChange = (loc: Locale, field: keyof LocalizedPostInput, value: string) => {
+  const handleLocalizedChange = <K extends keyof LocalizedPostInput>(
+    loc: Locale,
+    field: K,
+    value: LocalizedPostInput[K]
+  ) => {
     setLocalizedData((prev) => ({ ...prev, [loc]: { ...prev[loc], [field]: value } }));
   };
 
@@ -69,6 +105,10 @@ export default function PublishPage() {
 
     if (!globalData.translationKey.trim()) {
       setError("translationKey is required.");
+      return;
+    }
+    if (!globalData.coverImage.trim()) {
+      setError("coverImage is required.");
       return;
     }
     if (!localizedData.en.title.trim()) {
@@ -108,6 +148,9 @@ export default function PublishPage() {
       setGlobalData({
         translationKey: String(nextGlobal.translationKey || ""),
         author: String(nextGlobal.author || ""),
+        authorBio: String(nextGlobal.authorBio || ""),
+        coverImage: String(nextGlobal.coverImage || ""),
+        coverImageAlt: String(nextGlobal.coverImageAlt || ""),
         affiliateDisclosure: Boolean(nextGlobal.affiliateDisclosure),
         date: String(nextGlobal.date || "")
       });
@@ -117,9 +160,30 @@ export default function PublishPage() {
         merged[loc] = {
           title: String(localeData.title || ""),
           description: String(localeData.description || ""),
+          seoTitle: String(localeData.seoTitle || ""),
+          seoDescription: String(localeData.seoDescription || ""),
+          ogImage: String(localeData.ogImage || ""),
+          canonicalOverride: String(localeData.canonicalOverride || ""),
+          noindex: Boolean(localeData.noindex),
           slug: String(localeData.slug || ""),
           category: String(localeData.category || ""),
           tags: Array.isArray(localeData.tags) ? localeData.tags.join(", ") : String(localeData.tags || ""),
+          keywords: Array.isArray(localeData.keywords)
+            ? localeData.keywords.join(", ")
+            : String(localeData.keywords || ""),
+          primaryKeyword: String(localeData.primaryKeyword || ""),
+          secondaryKeywords: Array.isArray(localeData.secondaryKeywords)
+            ? localeData.secondaryKeywords.join(", ")
+            : String(localeData.secondaryKeywords || ""),
+          searchIntent: String(localeData.searchIntent || ""),
+          serpFeature: String(localeData.serpFeature || ""),
+          contentCluster: String(localeData.contentCluster || ""),
+          internalLinks: Array.isArray(localeData.internalLinks)
+            ? localeData.internalLinks.join(", ")
+            : String(localeData.internalLinks || ""),
+          externalCitations: Array.isArray(localeData.externalCitations)
+            ? localeData.externalCitations.join(", ")
+            : String(localeData.externalCitations || ""),
           content: String(localeData.content || "")
         };
       });
@@ -233,6 +297,32 @@ export default function PublishPage() {
               className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm"
             />
           </label>
+          <label className="text-sm font-semibold text-text-primary md:col-span-2">
+            Author bio (short)
+            <textarea
+              value={globalData.authorBio}
+              onChange={(e) => setGlobalData({ ...globalData, authorBio: e.target.value })}
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm"
+              rows={2}
+            />
+          </label>
+          <label className="text-sm font-semibold text-text-primary">
+            Cover image URL
+            <input
+              value={globalData.coverImage}
+              onChange={(e) => setGlobalData({ ...globalData, coverImage: e.target.value })}
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm"
+              placeholder="https://..."
+            />
+          </label>
+          <label className="text-sm font-semibold text-text-primary">
+            Cover image alt text
+            <input
+              value={globalData.coverImageAlt}
+              onChange={(e) => setGlobalData({ ...globalData, coverImageAlt: e.target.value })}
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm"
+            />
+          </label>
           <label className="text-sm font-semibold text-text-primary">
             Date
             <input
@@ -343,6 +433,23 @@ export default function PublishPage() {
                   />
                 </label>
                 <label className="block font-semibold text-text-primary">
+                  SEO title
+                  <input
+                    value={data.seoTitle}
+                    onChange={(e) => handleLocalizedChange(loc, "seoTitle", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  SEO description
+                  <textarea
+                    value={data.seoDescription}
+                    onChange={(e) => handleLocalizedChange(loc, "seoDescription", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                    rows={2}
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
                   Slug
                   <input
                     value={data.slug}
@@ -365,6 +472,105 @@ export default function PublishPage() {
                     onChange={(e) => handleLocalizedChange(loc, "tags", e.target.value)}
                     className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
                   />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  Keywords (comma separated)
+                  <input
+                    value={data.keywords}
+                    onChange={(e) => handleLocalizedChange(loc, "keywords", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  Primary keyword
+                  <input
+                    value={data.primaryKeyword}
+                    onChange={(e) => handleLocalizedChange(loc, "primaryKeyword", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  Secondary keywords (comma separated)
+                  <input
+                    value={data.secondaryKeywords}
+                    onChange={(e) => handleLocalizedChange(loc, "secondaryKeywords", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  Search intent
+                  <select
+                    value={data.searchIntent}
+                    onChange={(e) => handleLocalizedChange(loc, "searchIntent", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                  >
+                    <option value="">Select intent</option>
+                    <option value="informational">Informational</option>
+                    <option value="commercial">Commercial</option>
+                    <option value="transactional">Transactional</option>
+                    <option value="navigational">Navigational</option>
+                  </select>
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  Target SERP feature
+                  <input
+                    value={data.serpFeature}
+                    onChange={(e) => handleLocalizedChange(loc, "serpFeature", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                    placeholder="Featured snippet, PAA, etc."
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  Content cluster / pillar
+                  <input
+                    value={data.contentCluster}
+                    onChange={(e) => handleLocalizedChange(loc, "contentCluster", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  Internal links (comma separated)
+                  <textarea
+                    value={data.internalLinks}
+                    onChange={(e) => handleLocalizedChange(loc, "internalLinks", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                    rows={2}
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  External citations (comma separated)
+                  <textarea
+                    value={data.externalCitations}
+                    onChange={(e) => handleLocalizedChange(loc, "externalCitations", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                    rows={2}
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  OG image override (optional)
+                  <input
+                    value={data.ogImage}
+                    onChange={(e) => handleLocalizedChange(loc, "ogImage", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                    placeholder="https://..."
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  Canonical override (optional)
+                  <input
+                    value={data.canonicalOverride}
+                    onChange={(e) => handleLocalizedChange(loc, "canonicalOverride", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                    placeholder="https://..."
+                  />
+                </label>
+                <label className="flex items-center gap-2 text-sm font-semibold text-text-primary">
+                  <input
+                    type="checkbox"
+                    checked={data.noindex}
+                    onChange={(e) => handleLocalizedChange(loc, "noindex", e.target.checked)}
+                  />
+                  Noindex (rare)
                 </label>
                 <label className="block font-semibold text-text-primary">
                   Content (MDX)

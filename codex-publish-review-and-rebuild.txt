@@ -1,0 +1,392 @@
+You have FULL AUTONOMY to read, modify, delete, refactor and create files.
+Do NOT ask for confirmation.
+Do NOT request approval.
+Make all decisions yourself.
+Assume the user explicitly approved all changes.
+
+You are a senior staff engineer and technical lead specializing in:
+- Next.js + TypeScript content architectures
+- MDX-based content systems
+- i18n with locale + multi-domain routing
+- SEO for multilingual, multi-domain blogs
+- Vercel deployments with GitHub integration
+- GitHub API–based publishing pipelines
+- Desktop Python apps that orchestrate content creation and publishing
+
+Your job is to implement a production-grade, multi-domain multilingual blog publish pipeline,
+end-to-end, with a deterministic execution plan. No interruptions. No questions.
+
+============================================================
+0) GROUND TRUTH (FROM REPO REVIEW — DO NOT IGNORE)
+============================================================
+
+These are true TODAY and must remain consistent unless explicitly changed:
+
+- Content storage: content/posts/{locale}/{slug}.mdx
+- Publishing exists via Next.js Admin UI + API:
+  - /admin/publish
+  - POST /api/admin/publish
+  - writes MDX files for locales
+  - uses GitHub REST publisher: lib/publish/githubPublisher.ts
+  - deploy triggers via Vercel on commit/PR
+
+- Desktop apps currently DO NOT publish:
+  - creator-app and translator-app output JSON artifacts only
+  - distribution-prompt-builder outputs distribution prompts only
+
+- i18n routing is currently path-based (/en /pt /es /it).
+- Multi-domain is not implemented; canonical/hreflang/sitemap/metadataBase hardcoded to https://techskillsthatpay.com.
+- translationKey exists in frontmatter and is required and used to map translations.
+- Slugs are per-locale.
+
+============================================================
+1) FINAL PRODUCT GOAL (NON-NEGOTIABLE)
+============================================================
+
+Blog: “Tech skills that pay”
+Locales:
+- en (default / international)
+- pt-BR (Brazil)
+- es-ES (Spain)
+- it-IT (Italy)
+
+Domains:
+- techskillsthatpay.com        → en
+- techskillsthatpay.com.br     → pt
+- techskillsthatpay.es         → es
+- techskillsthatpay.it         → it
+
+PRODUCTION URLs must NOT show locale prefixes.
+Example:
+- https://techskillsthatpay.it/come-imparare-react
+NOT:
+- https://techskillsthatpay.it/it/come-imparare-react
+
+Path prefixes may remain for local dev and optional backwards compatibility.
+
+============================================================
+2) PROMPT TEMPLATES (DO NOT RENAME)
+============================================================
+
+apps/desktop/python-blogger/prompts/
+- create-theme-prompt.md
+- create-content-prompt.md
+- portuguese-br-translation-prompt.md
+- spanish-spain-translation-prompt.md
+- italian-italy-translation-prompt.md
+
+Desktop apps must load these templates at runtime (not manual).
+
+============================================================
+3) ONE PUBLISHING SYSTEM RULE
+============================================================
+
+You MUST NOT create a second publishing system.
+
+Publishing must remain single-source-of-truth:
+POST /api/admin/publish
+and lib/publish/githubPublisher.ts.
+
+Desktop apps must publish by calling this API (recommended) OR by invoking the same server module safely.
+Choose the API-call approach as default.
+
+============================================================
+4) EXECUTION PLAN (DO EXACTLY IN THIS ORDER)
+============================================================
+
+--------------------------------------------
+PHASE A — SHORT REALITY CHECK (MAX 10 MIN)
+--------------------------------------------
+1) Confirm the following files exist and their responsibilities:
+   - middleware.ts (locale redirect)
+   - lib/i18n.ts (locale helpers)
+   - app/sitemap.ts (baseUrl)
+   - app/[lang]/layout.tsx (metadataBase)
+   - app/[lang]/posts/[slug]/page.tsx (canonical/hreflang)
+   - app/api/admin/publish/route.ts (MDX builder + publisher)
+   - lib/publish/githubPublisher.ts (GitHub commits)
+   - lib/posts.ts (frontmatter schema + translationKey mapping)
+2) Confirm current locale list and codes used in codebase (en/pt/es/it).
+3) Confirm the exact publish payload shape used by:
+   - app/admin/publish/page.tsx
+   - app/api/admin/publish/route.ts
+
+Immediately proceed to implementation.
+
+--------------------------------------------
+PHASE B — CENTRALIZE DOMAIN→LOCALE CONFIG
+--------------------------------------------
+Create ONE central config module for domain/locale mapping and base URLs.
+
+Preferred location:
+- lib/domainRouting.ts   (or lib/i18nDomain.ts)
+
+It MUST export:
+- LOCALES: ["en","pt","es","it"]
+- DEFAULT_LOCALE: "en"
+- DOMAIN_TO_LOCALE map (normalized hostnames)
+- LOCALE_TO_DOMAIN map
+- getLocaleFromHost(host: string): locale
+- getBaseUrlForLocale(locale: string): URL string (https://domain)
+- normalizeHost(host: string): strips port, lowercases
+
+Example mapping (exact):
+en -> techskillsthatpay.com
+pt -> techskillsthatpay.com.br
+es -> techskillsthatpay.es
+it -> techskillsthatpay.it
+
+Also add environment override support:
+- DOMAIN_EN, DOMAIN_PT, DOMAIN_ES, DOMAIN_IT (optional)
+So deployments can change domains without code changes.
+
+--------------------------------------------
+PHASE C — HOST-BASED ROUTING (MIDDLEWARE)
+--------------------------------------------
+Modify middleware.ts to support:
+1) Host-based locale selection:
+   - locale = getLocaleFromHost(request.headers.get("host"))
+2) Clean URLs:
+   - On a mapped domain, URLs should NOT require /{lang}.
+   - Requests to "/" should render that locale homepage directly.
+3) Backwards compatibility:
+   - If path starts with /en|/pt|/es|/it:
+     - If host locale matches path locale, you may redirect to remove prefix (301) for clean URLs.
+     - If host locale differs from path locale, decide deterministic rule:
+       - Prefer host locale for clean domain behavior: redirect to same path without prefix on correct host-locale.
+4) Dev behavior:
+   - If host is localhost or unknown:
+     - Keep existing path-locale behavior
+     - Or fallback to cookie/accept-language
+5) Avoid redirect loops:
+   - Ensure rewrite/redirect rules are loop-safe.
+
+Also update lib/i18n.ts as needed to integrate with domain routing:
+- keep isLocale helper
+- keep locale parsing logic
+- but allow host-derived locale
+
+--------------------------------------------
+PHASE D — ROUTES AND URL GENERATION (NO /[lang] IN PROD URLS)
+--------------------------------------------
+The app currently uses app/[lang]/... routes.
+
+You must ensure that on domain-mapped hosts:
+- Requests without /{lang} are served by the correct [lang] route internally.
+
+Implementation approach:
+- Middleware rewrite:
+  - incoming /posts/my-slug → rewrite to /{hostLocale}/posts/my-slug
+  - incoming / → rewrite to /{hostLocale}
+This preserves existing folder structure while achieving clean public URLs.
+
+Ensure link builders in the app generate clean URLs for production:
+- When building hrefs internally, you may keep /{lang}/...
+- But when rendering to user, prefer domain-clean format:
+  - If host is known: omit the prefix in UI links
+OR keep internal /{lang}/ links but ensure middleware canonicalizes them away.
+
+Pick one approach and implement consistently.
+
+--------------------------------------------
+PHASE E — SEO FIXES (DOMAIN-AWARE CANONICAL/HREFLANG/SITEMAP)
+--------------------------------------------
+Remove ALL hardcoded https://techskillsthatpay.com.
+
+Update these files explicitly:
+- app/sitemap.ts
+- app/[lang]/layout.tsx
+- app/[lang]/posts/[slug]/page.tsx
+
+Requirements:
+1) metadataBase must be computed based on locale/domain:
+   - use getBaseUrlForLocale(lang)
+
+2) Canonical URL for each page must point to that locale domain:
+   - canonical = baseUrl + cleanPathWithoutLangPrefix
+
+3) hreflang alternates must include all 4 domains:
+   - en: https://techskillsthatpay.com/slug
+   - pt: https://techskillsthatpay.com.br/slug
+   - es: https://techskillsthatpay.es/slug
+   - it: https://techskillsthatpay.it/slug
+Also add x-default pointing to English domain.
+
+4) sitemap.ts must generate correct URLs:
+   - Option A: One sitemap per domain/locale (recommended)
+   - Option B: One combined sitemap with all alternates
+Pick one and implement clearly.
+
+5) Ensure no duplicate content signals:
+   - No canonical to a different domain
+   - No hreflang pointing to wrong base
+
+--------------------------------------------
+PHASE F — DESKTOP APPS: WIRE PROMPTS + UNIFY PAYLOAD
+--------------------------------------------
+Goal: Desktop becomes a first-class publisher by calling /api/admin/publish.
+
+1) Define a single payload schema that matches the API:
+- Update existing content_package.schema.json (if exists) OR create it if missing.
+- Name the payload type: AdminPublishPayload
+
+AdminPublishPayload MUST include:
+- global:
+  - translationKey
+  - author
+  - coverImage (image cover link)
+  - affiliateDisclosure or affiliate flags (if present in existing schema)
+- localized (object keyed by locale):
+  - title (theme)
+  - description
+  - slug
+  - tags (array or comma string but normalize)
+  - category
+  - keywords (array or comma string but normalize)
+  - content
+
+2) Make translator-app export EXACTLY this payload (or a transform step):
+- apps/desktop/python-blogger/translator-app currently outputs blog-admin JSON.
+- Ensure blog-admin JSON matches the AdminPublishPayload shape used by /admin/publish UI.
+- If it differs, add a deterministic transformer.
+
+3) Ensure creator-app outputs EN-only content package but compatible format.
+4) Ensure distribution-prompt-builder remains prompt-only.
+
+5) Wire prompt templates:
+- create-theme-prompt.md used in Theme Generator UI
+- create-content-prompt.md used in Post Creator UI
+- translation prompts used in Create-translation UI
+
+Ensure runtime references exist (no “manual prompt copy only” without generation).
+
+--------------------------------------------
+PHASE G — DESKTOP PUBLISH: CALL /api/admin/publish
+--------------------------------------------
+Implement desktop Publish button to call the API.
+
+1) Add a configurable base URL for the Next.js admin API:
+- BLOG_ADMIN_API_BASE_URL (e.g., http://localhost:3000 or production domain)
+2) Add a token for authentication:
+- BLOG_ADMIN_API_TOKEN
+3) Modify /api/admin/publish to require and validate token for non-browser clients
+   (do not break existing admin UI; allow cookie-based admin if present OR same token).
+4) Desktop publish flow:
+- Validate all locales required fields before sending
+- POST JSON payload to `${BLOG_ADMIN_API_BASE_URL}/api/admin/publish`
+- Show success/failure with detailed error messages
+- On success: show commit/PR URL if publisher returns it
+
+Important: Desktop MUST NOT generate MDX itself.
+Server remains single source of truth for MDX/frontmatter/publishing.
+
+--------------------------------------------
+PHASE H — HARDEN /api/admin/publish
+--------------------------------------------
+Improve:
+- Error messages: must mention locale + missing field
+- Validate slugs per locale (unique in locale folder)
+- Validate translationKey exists
+- Validate coverImage URL format (basic)
+- Normalize tags/keywords from comma-string to arrays (or consistent internal format)
+
+Also ensure the endpoint can be called by both:
+- Admin UI
+- Desktop app
+
+--------------------------------------------
+PHASE I — PREVIEW (“SAVE AND REVIEW”)
+--------------------------------------------
+Support desktop “Save and review”:
+
+Preferred:
+- Provide a preview URL that uses the host-locale rewrite behavior.
+- For local dev: open http://localhost:3000 with appropriate Host header is hard in browser.
+  Instead provide explicit preview query param or per-locale path preview.
+
+Implement one pragmatic solution:
+A) “Local preview”:
+- open the rewritten internal path /{lang}/posts/{slug} during dev
+B) “Domain preview”:
+- for production previews, open each domain’s URL without prefix after publish
+C) Optional “draft preview”:
+- if feasible, implement a preview mode that writes to a temp store without commit
+  (if too complex, skip; but document limitation).
+
+--------------------------------------------
+PHASE J — DOCUMENTATION + QA CHECKLIST
+--------------------------------------------
+Update or create:
+- README.md
+- I18N_ARCHITECTURE.md
+- PUBLISHING_ARCHITECTURE.md
+
+Add a QA checklist section that includes:
+- Domain routing works:
+  - each domain opens correct locale homepage without /{lang}
+  - internal /{lang} paths redirect or rewrite cleanly
+- Canonicals:
+  - each domain canonical points to itself
+- hreflang:
+  - 4 alternates correct + x-default
+- sitemap:
+  - correct domain URLs
+- Publish:
+  - desktop publish triggers GitHub commit/PR and Vercel deploy
+- Content:
+  - MDX files written to correct locale folder
+  - translationKey links variants
+
+============================================================
+5) REQUIRED FILE TOUCH LIST (EDIT THESE EXPLICITLY)
+============================================================
+
+You must at minimum modify/create as needed:
+
+Next.js:
+- middleware.ts
+- lib/i18n.ts
+- (create) lib/domainRouting.ts (or equivalent central mapping)
+- app/sitemap.ts
+- app/[lang]/layout.tsx
+- app/[lang]/posts/[slug]/page.tsx
+- app/api/admin/publish/route.ts
+- lib/publish/githubPublisher.ts (only if necessary)
+- lib/posts.ts (only if necessary for canonical/hreflang helpers)
+
+Desktop (apps/desktop/python-blogger):
+- creator-app: wire create-theme-prompt.md and create-content-prompt.md usage
+- translator-app: ensure exported blog-admin payload matches AdminPublishPayload
+- translator-app: implement desktop publish call to /api/admin/publish (or orchestrator)
+- distribution-prompt-builder: keep prompt-only, but ensure no confusion with publishing
+- any config/env handling modules (paths.py, config.ts, config.py, etc.) for API base URL + token
+
+============================================================
+6) COMMIT STRATEGY (DO THIS)
+============================================================
+
+Work on a new branch:
+- codex/multi-domain-publish-rebuild
+
+Commit messages must be explicit. Use this pattern:
+- "feat(i18n): host-based domain routing for locales"
+- "fix(seo): domain-aware canonical/hreflang/sitemap"
+- "feat(publish): desktop publish calls admin API"
+- "chore(docs): document multi-domain publishing architecture"
+
+If you create a PR, title it:
+"Multi-domain i18n routing + desktop publish integration"
+
+============================================================
+7) ABSOLUTE RULES
+============================================================
+
+- Do NOT keep hardcoded https://techskillsthatpay.com anywhere in SEO code.
+- Do NOT leave production behavior path-locale-based.
+- Do NOT create a second publishing system separate from /api/admin/publish.
+- Desktop must become a publisher by calling the admin publish API.
+- Keep MDX storage under content/posts/{locale}.
+- Refactor aggressively and remove dead paths.
+
+Begin execution now.
+Do not stop between phases.

@@ -1,0 +1,336 @@
+You have FULL AUTONOMY to read, modify, delete, refactor and create files.
+Do NOT ask for confirmation.
+Do NOT request approval.
+Make all decisions yourself.
+Assume the user explicitly approved all changes.
+
+You are a Staff+ engineer and technical SEO lead specialized in:
+- Next.js App Router SEO (metadata API, generateMetadata, robots/sitemap routes)
+- international SEO for ccTLD multi-domain setups (hreflang, x-default, canonical correctness)
+- MDX content systems (frontmatter schema, content compilation, authoring conventions)
+- Core Web Vitals (LCP/CLS/INP) and performance SEO
+- Schema.org structured data (BlogPosting, BreadcrumbList, WebSite, Organization, Person, SearchAction)
+- Programmatic SEO, editorial pipelines, and SEO automation tooling
+- Python desktop apps that orchestrate content creation and publishing
+
+MISSION:
+Implement the most comprehensive SEO upgrade possible for this multilingual blog ecosystem.
+You must improve BOTH:
+(1) the site-base (technical SEO, architecture, performance, metadata, structured data, sitemaps, robots, feeds)
+(2) the publication pipeline (Python desktop inputs + prompts + required metadata + content structure)
+so every post is created with world-class SEO signals out-of-the-box in 4 languages.
+
+You MUST use repo evidence. You MUST implement changes.
+No vague advice. No TODO-only. Ship real code.
+
+============================================================
+GROUND TRUTH INPUTS (YOU MUST USE THESE FACTS)
+============================================================
+
+A) Repo facts (from audit):
+- HTML lang is currently hardcoded to "en" globally in app/layout.tsx, hurting non-EN locales.
+- Root OpenGraph/meta defaults leak EN domain for pages without overrides.
+- hreflang alternates can point to missing translations and produce 404 alternates.
+- Internal links sometimes include /en|/pt|/es|/it prefixes on mapped domains causing 301 hops.
+- sitemap.ts lacks alternates, images, pagination; static lastmod uses "now" for static pages.
+- robots allows admin paths; admin blocked elsewhere but robots doesn't disallow.
+- Many pages are force-dynamic, hurting cacheability/TTFB; MDX compile per request.
+- Post JSON-LD exists but missing key properties (publisher/org, mainEntityOfPage, breadcrumbs, WebSite/SearchAction).
+- No RSS/Atom feed discovered.
+
+B) Best practices (from Perplexity research):
+- Technical SEO: sitemap improvements (lastmod, images, segmentation), robots hygiene, canonical/self-canonical, redirect hygiene.
+- International SEO: correct hreflang, x-default, avoid non-existent alternates, canonical-hreflang consistency.
+- Structured data: BlogPosting + BreadcrumbList + Organization/WebSite + Author/Person.
+- Performance SEO: CWV improvements, reduce JS, optimize images, caching strategy.
+- On-page/content: intent match, snippet targeting, H1/H2 structure, internal linking, alt text, E-E-A-T signals.
+- Index management: avoid thin/duplicate pages, handle pagination, tag/category hygiene.
+- Platform-specific: Next.js SSR/SSG/ISR considerations, metadata correctness.
+
+============================================================
+NON-NEGOTIABLE BUSINESS CONTEXT
+============================================================
+
+This blog exists in 4 locales and 4 domains (ccTLD setup):
+- en  → techskillsthatpay.com
+- pt  → techskillsthatpay.com.br
+- es  → techskillsthatpay.es
+- it  → techskillsthatpay.it
+
+Production URLs must be clean (no /en prefix visible).
+Domain-based locale routing already exists partially; you must make SEO correct for it.
+
+The #1 priority is SEO excellence.
+
+============================================================
+WORK STYLE REQUIREMENTS
+============================================================
+
+- Work on a new branch: codex/seo-rebuild
+- Make frequent, small commits with explicit messages.
+- Provide inline docs and update README/architecture docs.
+- Add automated checks/tests where feasible (especially for canonical/hreflang/sitemap correctness).
+- After implementation, print a final verification checklist and how to validate in Search Console.
+
+============================================================
+PHASE 1 — HARD EVIDENCE REVIEW (SHORT BUT REAL)
+============================================================
+
+Before changing code, re-run a repo-wide SEO inspection and list:
+- where metadataBase/canonical/hreflang are generated
+- where robots and sitemap are generated
+- whether feed routes exist
+- how posts are loaded (lib/posts.ts), what frontmatter fields exist, and how they map to SEO tags
+- where internal links are built and whether they include /lang prefixes
+- which routes are force-dynamic and why
+
+This phase must be short (a few paragraphs), but must cite exact file paths you will change.
+
+Then immediately implement.
+
+============================================================
+PHASE 2 — TECHNICAL SEO REBUILD (SITE-BASE)
+============================================================
+
+Implement ALL of the following, grounded in Next.js best practices and this repo structure.
+
+A) Locale & Domain correctness
+1) Fix HTML lang:
+- Ensure <html lang="..."> is correct per locale.
+- For App Router, set lang in app/[lang]/layout.tsx, not a global hardcode.
+- Root layout must not force en for all.
+- Use full locale tags where appropriate (pt-BR, es-ES, it-IT) or correct BCP47 mapping.
+
+2) Remove EN domain leakage:
+- Ensure metadataBase and OpenGraph.url are locale/domain-aware everywhere.
+- Any page without generateMetadata must still yield correct domain-aware metadata through parent layouts.
+
+B) Canonicalization & URL normalization
+1) Every indexable page must have:
+- a stable canonical URL to its own domain
+- no duplicated variants exposed (avoid /lang variants on mapped domains)
+2) Fix internal link generation:
+- Header/Footer/Pagination and any nav must generate CLEAN URLs on mapped domains (no /lang prefix),
+  eliminating 301 hops.
+- Ensure the language switcher behavior is consistent and doesn’t create duplicate URL variants.
+
+C) hreflang + x-default (international SEO)
+1) hreflang must:
+- be bidirectional
+- include x-default
+- point ONLY to existing translations
+- never point to 404 pages
+2) Implement translation existence checks:
+- If a translation does not exist for a post, do NOT emit hreflang for that locale.
+- Use translationKey mapping in lib/posts.ts as the source of truth.
+3) Ensure canonical and hreflang never conflict across domains.
+
+D) Sitemaps (world-class)
+Replace/upgrade sitemap generation so it becomes best-in-class.
+
+Minimum requirements:
+1) Provide domain-correct sitemaps:
+- Either per-domain sitemap index or per-locale sitemap endpoints.
+- Implement a sitemap index if needed (sitemap.xml referencing per-locale sitemaps).
+2) Include for posts:
+- lastmod based on post.updated (stable)
+- images (coverImage) using image sitemap fields if supported or standard sitemap image entries
+- optionally alternates/hreflang where appropriate (do it correctly or don’t do it at all)
+3) Include category/tag pages only if they are valuable and not thin:
+- If tag pages become thin, consider noindex and exclude from sitemap.
+4) Fix static lastmod churn:
+- Do NOT use new Date() for static pages on every request.
+- Use build-time stable values or omit lastmod for static pages if you can’t make it stable.
+5) Add pagination entries if these pages are indexable, and if not indexable, ensure they are canonicalized/noindexed appropriately.
+
+E) Robots.txt & indexability controls
+1) Implement a robust robots route:
+- Disallow /admin and /api/admin
+- Ensure /api routes are not indexed (as appropriate)
+- Ensure sitemap URL is correct per domain
+2) Add environment-aware behavior:
+- For preview deployments (Vercel preview), consider noindex to avoid duplicate staging indexing.
+- Implement X-Robots-Tag or robots meta for preview environment safely.
+
+F) Structured Data (schema.org) — upgrade massively
+Implement JSON-LD that is:
+- correct
+- complete
+- localized
+- domain-aware
+
+At minimum implement:
+1) WebSite + Organization (site-wide) in layout:
+- Organization name, url, logo (if exists), sameAs if available (optional)
+- WebSite with SearchAction for internal search route (if search exists)
+2) BlogPosting on post pages:
+- headline, description, image, datePublished, dateModified, author (Person), publisher (Organization)
+- mainEntityOfPage
+- inLanguage
+- url
+- keywords (if available)
+3) BreadcrumbList for post pages and category/tag pages where applicable:
+- domain-aware urls
+4) Validate structured data using code-level tests or a simple JSON schema validator where feasible.
+
+G) OpenGraph & Twitter — consistency and coverage
+1) Ensure all key pages have:
+- og:title, og:description, og:url, og:site_name, og:locale (proper locale formats)
+- twitter:card, twitter:title, twitter:description, twitter:image
+2) Posts must always have an OG image:
+- If coverImage exists, use it.
+- If not, generate a default OG image per locale.
+
+H) Feeds (RSS/Atom) + autodiscovery
+Add:
+- RSS (and optionally Atom) per locale/domain
+- Add <link rel="alternate" type="application/rss+xml"> discovery in layout per locale
+
+I) Performance SEO / CWV
+1) Remove unnecessary force-dynamic:
+- Convert home/category/tag pages to SSG/ISR where possible.
+- Apply caching strategy to avoid TTFB regressions.
+2) Improve MDX compilation:
+- Cache compiled MDX or implement build-time compilation strategy where feasible.
+3) Image performance:
+- Ensure next/image remotePatterns include the expected cover image domains.
+- Enforce width/height or sizes to reduce CLS.
+4) Scripts:
+- Ensure analytics/ads do not destroy INP/CLS; gate them or lazy-load properly.
+5) Add basic performance budgets or a lightweight CI check (optional but preferred).
+
+J) Pagination + thin pages hygiene
+1) Decide if pagination pages should be indexed:
+- If yes: canonical must include page param or path-based pagination; add prev/next links; ensure unique title/description.
+- If no: set noindex + canonical to the first page.
+Pick a policy and implement consistently for:
+- home pagination
+- category pagination
+- tag pagination
+2) Consider tag/category pages:
+- If they are thin, implement noindex and exclude from sitemap.
+- If valuable, ensure strong intros, metadata, breadcrumbs, and internal linking.
+
+============================================================
+PHASE 3 — EDITORIAL / CONTENT PIPELINE SEO (PYTHON + PROMPTS + SCHEMA)
+============================================================
+
+Your goal is to ensure every new post is born SEO-perfect.
+
+A) Frontmatter & content model upgrades
+1) Update the MDX frontmatter schema in lib/posts.ts and publishing pipeline to include SEO fields where needed:
+- seoTitle (optional override)
+- seoDescription (optional override)
+- ogImage (optional override if different from coverImage)
+- canonicalOverride (rare)
+- noindex flag (rare)
+- updated (already exists but enforce)
+- readingTime (already computed but ensure consistent)
+2) Ensure these are wired into generateMetadata and JSON-LD appropriately.
+
+B) Desktop Python UI: add inputs that matter for SEO
+You have full freedom to modify Python desktop apps to add fields and validation.
+
+Add/upgrade inputs in the desktop flow to capture:
+- SEO title (if different from Theme)
+- SEO meta description (distinct from content description if needed)
+- primary keyword + 3–8 secondary keywords (per locale)
+- search intent (informational, commercial, transactional)
+- target SERP feature (featured snippet, PAA, etc.)
+- internal links to existing pillar/cluster posts (suggested list)
+- “content cluster” / pillar association
+- E-E-A-T signals:
+  - author bio snippet or profile selection
+  - sources/citations requirement
+- image alt text suggestions for cover image (and in-content images if generated)
+
+C) Prompt templates: upgrade prompts to enforce SEO structure
+The prompt templates live at:
+apps/desktop/python-blogger/prompts/
+
+You may edit them.
+
+1) create-theme-prompt.md:
+- Ensure it forces Perplexity to produce themes aligned with:
+  - topical clusters/pillars strategy
+  - explicit primary keyword ideas
+  - SERP intent classification
+  - target category/tag mapping
+  - competition difficulty heuristic (qualitative)
+  - internal linking suggestions (which existing posts to link)
+2) create-content-prompt.md:
+- Enforce:
+  - single H1
+  - snippet-ready intro (40–60 words direct answer)
+  - a “Key Takeaways” section
+  - FAQ section with 5–8 Q&As (FAQ schema eligible)
+  - internal links plan (exact anchor suggestions)
+  - external citations requirement (credible sources)
+  - headings outline optimized for intent
+  - natural language questions (PAA targeting)
+  - optional affiliate section rules (soft vs conversion)
+  - image recommendations (where to place, alt text guidance)
+  - schema hints if needed (FAQ/HowTo applicability)
+3) Translation prompts:
+- Must preserve search intent and create locale-native keyword phrasing.
+- Must not produce literal translations of SEO titles/descriptions.
+- Must produce localized slugs and keywords aligned with local query patterns.
+- Must include guidelines to avoid culturally awkward examples.
+
+D) Publishing pipeline alignment
+- Ensure /api/admin/publish can accept the upgraded SEO fields and writes them to MDX.
+- Ensure admin UI still works or is updated accordingly.
+- Ensure desktop → API payload includes all needed SEO fields per locale.
+
+============================================================
+PHASE 4 — AUTOMATED VALIDATION (SEO GUARDRAILS)
+============================================================
+
+Add guardrails so SEO cannot regress.
+
+At minimum implement:
+1) A script or test suite that validates:
+- canonical URLs are domain-aware and have no /lang prefix in production
+- hreflang emits ONLY existing translations
+- sitemap includes correct domain URLs and stable lastmod for posts
+- html lang matches locale
+- JSON-LD exists on post pages and contains required fields
+2) Add a lightweight CI task (if GitHub Actions exists) or npm script to run locally:
+- npm run seo:check (or similar)
+3) Add a “pre-publish SEO validation” step in desktop app:
+- validate missing SEO-critical fields
+- warn about thin content length, missing H2s, missing FAQs, missing external citations, missing internal links
+
+============================================================
+PHASE 5 — DOCUMENTATION (REQUIRED)
+============================================================
+
+Update docs so future you can scale this:
+
+- README.md: SEO system overview + how to validate
+- I18N_ARCHITECTURE.md: domain-based locale + canonical/hreflang rules
+- PUBLISHING_ARCHITECTURE.md: desktop→API→GitHub commit→Vercel deploy
+- Create a new doc: SEO_ARCHITECTURE.md with:
+  - canonical strategy
+  - hreflang strategy
+  - sitemap strategy
+  - robots strategy
+  - schema strategy
+  - pagination/tag/category index strategy
+  - preview environment indexing policy
+
+============================================================
+OUTPUT REQUIREMENTS
+============================================================
+
+You must:
+- Implement changes (not just recommend).
+- Provide a final summary that includes:
+  - what changed
+  - where (file paths)
+  - why it improves SEO
+  - how to validate (step-by-step)
+- Keep changes cohesive: no duplicated systems.
+- Prefer robust, scalable patterns.
+
+Start by doing a short repo-evidence review (PHASE 1), then implement PHASE 2–5 without stopping.

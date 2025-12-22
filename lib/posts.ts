@@ -1,20 +1,21 @@
-import "server-only";
+void import("server-only").catch(() => null);
 
 import fs from "fs/promises";
 import matter from "gray-matter";
 import { compileMDX } from "next-mdx-remote/rsc";
 import path from "path";
 import readingTime from "reading-time";
+import React from "react";
 import remarkGfm from "remark-gfm";
 import slugify from "slugify";
 
-import { mdxComponents } from "@/lib/mdx-components";
-import { logError } from "@/lib/logger";
-import { locales, type Locale } from "@/lib/i18n";
-import type { Post, PostFrontmatter } from "@/lib/types";
+import { logError } from "./logger.ts";
+import { locales, type Locale } from "./i18n.ts";
+import type { Post, PostFrontmatter } from "./types.ts";
 
 const POSTS_PATH = path.join(process.cwd(), "content", "posts");
 
+const cache = React.cache ?? (<T extends (...args: any[]) => any>(fn: T) => fn);
 let cachedPosts: Post[] | null = null;
 
 const slugOptions = { lower: true, strict: true, trim: true };
@@ -45,12 +46,33 @@ function assertFrontmatter(data: Record<string, unknown>, fallbackSlug: string):
   const fm: PostFrontmatter = {
     title: String(data.title),
     description: String(data.description),
+    seoTitle: data.seoTitle ? String(data.seoTitle) : undefined,
+    seoDescription: data.seoDescription ? String(data.seoDescription) : undefined,
+    ogImage: data.ogImage ? String(data.ogImage) : undefined,
+    canonicalOverride: data.canonicalOverride ? String(data.canonicalOverride) : undefined,
+    noindex: typeof data.noindex === "boolean" ? data.noindex : undefined,
     date: String(data.date),
     updated: String(data.updated ?? data.date),
     tags: Array.isArray(data.tags) ? data.tags.map((t) => String(t)) : [],
     category: String(data.category),
     slug: String(data.slug || fallbackSlug),
     coverImage: data.coverImage ? String(data.coverImage) : undefined,
+    coverImageAlt: data.coverImageAlt ? String(data.coverImageAlt) : undefined,
+    keywords: Array.isArray(data.keywords) ? data.keywords.map((k) => String(k)) : undefined,
+    primaryKeyword: data.primaryKeyword ? String(data.primaryKeyword) : undefined,
+    secondaryKeywords: Array.isArray(data.secondaryKeywords)
+      ? data.secondaryKeywords.map((k) => String(k))
+      : undefined,
+    searchIntent: data.searchIntent ? String(data.searchIntent) : undefined,
+    serpFeature: data.serpFeature ? String(data.serpFeature) : undefined,
+    contentCluster: data.contentCluster ? String(data.contentCluster) : undefined,
+    internalLinks: Array.isArray(data.internalLinks)
+      ? data.internalLinks.map((k) => String(k))
+      : undefined,
+    externalCitations: Array.isArray(data.externalCitations)
+      ? data.externalCitations.map((k) => String(k))
+      : undefined,
+    authorBio: data.authorBio ? String(data.authorBio) : undefined,
     affiliateDisclosure: Boolean(data.affiliateDisclosure),
     readingTime: data.readingTime ? String(data.readingTime) : undefined,
     author: String(data.author),
@@ -120,12 +142,13 @@ export async function getPostBySlug(locale: Locale, slug: string): Promise<Post 
   return posts.find((post) => post.slug === slug) ?? null;
 }
 
-export async function getCompiledPost(locale: Locale, slug: string) {
+export const getCompiledPost = cache(async (locale: Locale, slug: string) => {
   const post = await getPostBySlug(locale, slug);
   if (!post) {
     return null;
   }
 
+  const { mdxComponents } = await import("./mdx-components.tsx");
   const { content } = await compileMDX({
     source: post.content,
     options: {
@@ -139,7 +162,7 @@ export async function getCompiledPost(locale: Locale, slug: string) {
   });
 
   return { post, content };
-}
+});
 
 export async function getAllCategories(locale?: Locale) {
   const posts = await getAllPosts(locale);

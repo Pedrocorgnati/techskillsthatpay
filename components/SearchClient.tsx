@@ -17,11 +17,9 @@ type SearchPost = {
 
 type Props = {
   posts: SearchPost[];
-  locale?: string;
 };
 
-export default function SearchClient({ posts, locale }: Props) {
-  const base = locale ? `/${locale}` : "";
+export default function SearchClient({ posts }: Props) {
   const [term, setTerm] = useState("");
 
   const filtered = useMemo(() => {
@@ -56,7 +54,7 @@ export default function SearchClient({ posts, locale }: Props) {
             className="rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
           >
             <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-accent">
-              <Link href={`${base}/category/${post.categorySlug}`} className="hover:underline">
+              <Link href={`/category/${post.categorySlug}`} className="hover:underline">
                 {post.category}
               </Link>
               <span className="text-text-secondary">
@@ -68,7 +66,7 @@ export default function SearchClient({ posts, locale }: Props) {
               </span>
             </div>
             <h3 className="mt-2 text-xl font-semibold text-text-primary">
-              <Link href={`${base}/posts/${post.slug}`} className="transition hover:text-accent">
+              <Link href={`/posts/${post.slug}`} className="transition hover:text-accent">
                 {post.title}
               </Link>
             </h3>
@@ -77,7 +75,7 @@ export default function SearchClient({ posts, locale }: Props) {
               {post.tags.map((tag, idx) => (
                 <Link
                   key={tag}
-                  href={`${base}/tag/${post.tagSlugs[idx]}`}
+                  href={`/tag/${post.tagSlugs[idx]}`}
                   className="rounded-full bg-muted px-3 py-1 font-semibold hover:bg-muted/80"
                 >
                   #{tag}

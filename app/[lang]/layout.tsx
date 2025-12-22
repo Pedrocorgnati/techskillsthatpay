@@ -3,8 +3,20 @@ import "../globals.css";
 
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import JsonLd from "@/components/JsonLd";
 import ThemeProvider from "@/components/ThemeProvider";
-import { locales, type Locale, normalizeLocale } from "@/lib/i18n";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
+import { getHtmlLang, type Locale, locales, normalizeLocale } from "@/lib/i18n";
+import {
+  SITE_NAME,
+  SITE_TWITTER,
+  buildSiteJsonLd,
+  getDefaultOgImage,
+  getOgLocaleValue,
+  getPreviewRobots,
+  getSiteDescription,
+  getSiteTitle
+} from "@/lib/seo";
 
 type Props = {
   children: React.ReactNode;
@@ -15,31 +27,61 @@ export async function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
 
-export const dynamic = "force-dynamic";
-
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
+  const title = getSiteTitle(lang);
+  const description = getSiteDescription(lang);
+  const ogImage = getDefaultOgImage(lang);
+  const robots = getPreviewRobots();
+
   return {
     title: {
-      default: "TechSkillsThatPay | Evidence-based career skills",
-      template: "%s | TechSkillsThatPay"
+      default: title,
+      template: `%s | ${SITE_NAME}`
     },
-    metadataBase: new URL("https://techskillsthatpay.com"),
+    metadataBase: new URL(baseUrl),
+    description,
+    robots,
     alternates: {
       languages: Object.fromEntries(
-        locales.map((l) => [l, `https://techskillsthatpay.com/${l}`]).concat([["x-default", "https://techskillsthatpay.com/en"]])
+        locales
+          .map((l) => [getHtmlLang(l), `${getBaseUrlForLocale(l)}`])
+          .concat([["x-default", `${getBaseUrlForLocale("en")}`]])
       ),
-      canonical: `https://techskillsthatpay.com/${lang}`
+      canonical: `${baseUrl}/`,
+      types: {
+        "application/rss+xml": [{ url: `${baseUrl}/rss.xml`, title: `${SITE_NAME} RSS` }]
+      }
+    },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: `${baseUrl}/`,
+      siteName: SITE_NAME,
+      locale: getOgLocaleValue(lang),
+      images: ogImage ? [{ url: ogImage, alt: SITE_NAME }] : undefined
+    },
+    twitter: {
+      card: "summary_large_image",
+      creator: SITE_TWITTER,
+      site: SITE_TWITTER,
+      title,
+      description,
+      images: ogImage ? [ogImage] : undefined
     }
   };
 }
 
-export default function LangLayout({ children }: Props) {
+export default function LangLayout({ children, params }: Props) {
+  const lang = normalizeLocale(params.lang);
   return (
     <ThemeProvider>
-      <Header />
+      <JsonLd data={buildSiteJsonLd(lang)} />
+      <Header locale={lang} />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer locale={lang} />
     </ThemeProvider>
   );
 }

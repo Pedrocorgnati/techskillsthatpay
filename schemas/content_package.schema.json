@@ -1,32 +1,28 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AdminPublishPayload",
   "type": "object",
-  "required": ["meta", "global", "locales"],
+  "required": ["global", "localized"],
   "properties": {
-    "meta": {
-      "type": "object",
-      "required": ["translationKey", "createdAt", "updatedAt", "source", "publishAllLocales", "localesIncluded"],
-      "properties": {
-        "translationKey": {"type": "string"},
-        "createdAt": {"type": "string"},
-        "updatedAt": {"type": "string"},
-        "source": {"type": "string", "enum": ["creator", "translator", "manual"]},
-        "publishAllLocales": {"type": "boolean"},
-        "localesIncluded": {"type": "array", "items": {"type": "string"}}
-      }
-    },
     "global": {
       "type": "object",
-      "required": ["author", "blogUrl", "linkPolicy", "defaultAffiliateDisclosure"],
+      "required": ["translationKey", "author", "coverImage", "affiliateDisclosure", "date"],
       "properties": {
+        "translationKey": {"type": "string"},
         "author": {"type": "string"},
+        "authorBio": {"type": "string"},
+        "coverImage": {"type": "string"},
+        "coverImageAlt": {"type": "string"},
+        "affiliateDisclosure": {"type": "boolean"},
+        "date": {"type": "string"},
         "blogUrl": {"type": "string"},
-        "linkPolicy": {"type": "string", "enum": ["no-links", "blog-only", "blog-and-affiliate"]},
+        "linkPolicy": {"type": "string"},
         "defaultAffiliateDisclosure": {"type": "boolean"},
-        "theme": {"type": "string"}
+        "theme": {"type": "string"},
+        "source": {"type": "string"}
       }
     },
-    "locales": {
+    "localized": {
       "type": "object",
       "required": ["en"],
       "properties": {
@@ -38,27 +34,54 @@
     }
   },
   "definitions": {
-    "affiliateEntry": {
-      "type": "object",
-      "required": ["enabled", "url", "disclosure"],
-      "properties": {
-        "enabled": {"type": "boolean"},
-        "url": {"type": "string"},
-        "disclosure": {"type": "string"}
-      }
-    },
     "localeEntry": {
       "type": "object",
-      "required": ["title", "description", "slug", "content"],
+      "required": ["title", "description", "slug", "content", "category", "tags"],
       "properties": {
         "title": {"type": "string"},
         "description": {"type": "string"},
+        "seoTitle": {"type": "string"},
+        "seoDescription": {"type": "string"},
+        "ogImage": {"type": "string"},
+        "canonicalOverride": {"type": "string"},
+        "noindex": {"type": "boolean"},
         "slug": {"type": "string"},
         "content": {"type": "string"},
-        "keywords": {"type": "array", "items": {"type": "string"}},
-        "tags": {"type": "array", "items": {"type": "string"}},
-        "category": {"type": "string"},
-        "affiliate": {"$ref": "#/definitions/affiliateEntry"}
+        "keywords": {
+          "anyOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
+        "primaryKeyword": {"type": "string"},
+        "secondaryKeywords": {
+          "anyOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
+        "searchIntent": {"type": "string"},
+        "serpFeature": {"type": "string"},
+        "contentCluster": {"type": "string"},
+        "internalLinks": {
+          "anyOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
+        "externalCitations": {
+          "anyOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
+        "tags": {
+          "anyOf": [
+            {"type": "array", "items": {"type": "string"}},
+            {"type": "string"}
+          ]
+        },
+        "category": {"type": "string"}
       }
     }
   }

@@ -5,9 +5,23 @@ import { notFound } from "next/navigation";
 import AffiliateCTA from "@/components/AffiliateCTA";
 import Container from "@/components/Container";
 import CategoryBadge from "@/components/CategoryBadge";
+import JsonLd from "@/components/JsonLd";
 import TagPill from "@/components/TagPill";
-import { normalizeLocale, type Locale, locales } from "@/lib/i18n";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
+import { getHtmlLang, getLocaleLabel, normalizeLocale, type Locale } from "@/lib/i18n";
 import { getAllPosts, getCompiledPost, getPostBySlug, getTranslationsFor } from "@/lib/posts";
+import {
+  SITE_NAME,
+  SITE_TWITTER,
+  buildBreadcrumbList,
+  buildPostJsonLd,
+  getOgLocaleValue,
+  getPostKeywords,
+  getPostOgImage,
+  getPostSeoDescription,
+  getPostSeoTitle,
+  getPreviewRobots
+} from "@/lib/seo";
 
 type Props = {
   params: { lang: Locale; slug: string };
@@ -24,61 +38,78 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: "Post not found" };
 
   const translations = await getTranslationsFor(post.translationKey);
-  const url = `https://techskillsthatpay.com/${lang}/posts/${post.slug}`;
+  const baseUrl = getBaseUrlForLocale(lang);
+  const url = `${baseUrl}/posts/${post.slug}`;
+  const canonical = post.canonicalOverride?.trim() || url;
   const alternates = Object.fromEntries(
-    locales.map((loc) => {
-      const slug = translations[loc as Locale] ?? post.slug;
-      return [loc, `https://techskillsthatpay.com/${loc}/posts/${slug}`];
-    })
+    Object.entries(translations).map(([locale, slug]) => [
+      getHtmlLang(locale as Locale),
+      `${getBaseUrlForLocale(locale as Locale)}/posts/${slug}`
+    ])
   );
+  const xDefault = translations.en
+    ? `${getBaseUrlForLocale("en")}/posts/${translations.en}`
+    : undefined;
+  const ogImage = getPostOgImage(post, lang);
+  const previewRobots = getPreviewRobots();
+  const robots =
+    previewRobots ||
+    (post.noindex ? { index: false, follow: false, noarchive: true } : undefined);
+  const keywords = getPostKeywords(post);
 
   return {
-    title: post.title,
-    description: post.description,
-    alternates: { canonical: url, languages: { ...alternates, "x-default": `https://techskillsthatpay.com/en/posts/${post.slug}` } },
+    title: getPostSeoTitle(post),
+    description: getPostSeoDescription(post),
+    keywords: keywords.length ? keywords : undefined,
+    robots,
+    alternates: {
+      canonical,
+      languages: post.canonicalOverride ? undefined : { ...alternates, ...(xDefault ? { "x-default": xDefault } : {}) }
+    },
     openGraph: {
-      title: post.title,
-      description: post.description,
-      url,
+      title: getPostSeoTitle(post),
+      description: getPostSeoDescription(post),
+      url: canonical,
       type: "article",
       publishedTime: post.date,
       modifiedTime: post.updated,
       tags: post.tags,
-      locale: lang,
-      images: post.coverImage ? [{ url: post.coverImage, alt: post.title }] : undefined
+      locale: getOgLocaleValue(lang),
+      siteName: SITE_NAME,
+      images: ogImage ? [{ url: ogImage, alt: post.coverImageAlt || post.title }] : undefined
     },
     twitter: {
       card: "summary_large_image",
-      title: post.title,
-      description: post.description,
-      images: post.coverImage ? [post.coverImage] : undefined
+      title: getPostSeoTitle(post),
+      description: getPostSeoDescription(post),
+      site: SITE_TWITTER,
+      images: ogImage ? [ogImage] : undefined
     }
   };
 }
 
 export default async function PostPage({ params }: Props) {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   const compiled = await getCompiledPost(lang, params.slug);
   if (!compiled) {
     notFound();
   }
 
   const { post, content } = compiled;
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: post.title,
-    description: post.description,
-    datePublished: post.date,
-    dateModified: post.updated,
-    image: post.coverImage,
-    url: `https://techskillsthatpay.com/${lang}/posts/${post.slug}`,
-    inLanguage: lang,
-    author: {
-      "@type": "Person",
-      name: post.author
-    }
-  };
+  const translations = await getTranslationsFor(post.translationKey);
+  const translationLinks = (Object.entries(translations) as Array<[Locale, string]>)
+    .filter(([locale]) => locale !== lang)
+    .map(([locale, slug]) => ({
+      locale,
+      label: getLocaleLabel(locale),
+      url: `${getBaseUrlForLocale(locale)}/posts/${slug}`
+    }));
+  const breadcrumbs = buildBreadcrumbList([
+    { name: SITE_NAME, url: `${baseUrl}/` },
+    { name: post.category, url: `${baseUrl}/category/${post.categorySlug}` },
+    { name: post.title, url: `${baseUrl}/posts/${post.slug}` }
+  ]);
 
   return (
     <Container className="py-10">
@@ -89,7 +120,7 @@ export default async function PostPage({ params }: Props) {
               <div className="relative h-80 w-full overflow-hidden">
                 <Image
                   src={post.coverImage}
-                  alt={post.title}
+                  alt={post.coverImageAlt || post.title}
                   fill
                   className="object-cover"
                   priority
@@ -102,7 +133,7 @@ export default async function PostPage({ params }: Props) {
             )}
             <div className="absolute inset-x-0 bottom-0 px-6 pb-6 text-white">
               <div className="flex flex-wrap items-center gap-3">
-                <CategoryBadge category={post.category} slug={post.categorySlug} locale={lang} />
+                <CategoryBadge category={post.category} slug={post.categorySlug} />
                 <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur">
                   {post.readingTimeText}
                 </span>
@@ -126,9 +157,25 @@ export default async function PostPage({ params }: Props) {
           <div className="space-y-6 px-6 py-8 sm:px-10">
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag, idx) => (
-                <TagPill key={tag} tag={tag} slug={post.tagSlugs[idx]} locale={lang} />
+                <TagPill key={tag} tag={tag} slug={post.tagSlugs[idx]} />
               ))}
             </div>
+            {translationLinks.length ? (
+              <div className="rounded-2xl border border-border bg-muted px-4 py-3 text-sm text-text-secondary">
+                <span className="font-semibold text-text-primary">Available in:</span>{" "}
+                {translationLinks.map((item, idx) => (
+                  <span key={item.locale}>
+                    <a
+                      href={item.url}
+                      className="font-semibold text-accent hover:text-accent/80"
+                    >
+                      {item.label}
+                    </a>
+                    {idx < translationLinks.length - 1 ? ", " : ""}
+                  </span>
+                ))}
+              </div>
+            ) : null}
 
             {post.affiliateDisclosure ? (
               <div className="flex items-start gap-3 rounded-2xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-text-primary shadow-sm">
@@ -148,17 +195,14 @@ export default async function PostPage({ params }: Props) {
 
             <div className="flex flex-wrap gap-2">
               {post.tags.map((tag, idx) => (
-                <TagPill key={tag} tag={tag} slug={post.tagSlugs[idx]} locale={lang} />
+                <TagPill key={tag} tag={tag} slug={post.tagSlugs[idx]} />
               ))}
             </div>
           </div>
         </div>
       </article>
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={buildPostJsonLd(post, lang)} />
+      <JsonLd data={breadcrumbs} />
     </Container>
   );
 }

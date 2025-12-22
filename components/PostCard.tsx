@@ -7,18 +7,16 @@ import type { Post } from "@/lib/types";
 
 type Props = {
   post: Post;
-  locale?: string;
 };
 
-export default function PostCard({ post, locale }: Props) {
-  const base = locale ? `/${locale}` : "";
+export default function PostCard({ post }: Props) {
   return (
     <article className="group overflow-hidden rounded-3xl border border-border bg-card shadow-sm shadow-slate-200/70 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/60 dark:shadow-none">
       <div className="relative h-52 w-full overflow-hidden">
         {post.coverImage ? (
           <Image
             src={post.coverImage}
-            alt={post.title}
+            alt={post.coverImageAlt || post.title}
             fill
             className="object-cover transition duration-700 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, 50vw"
@@ -47,7 +45,7 @@ export default function PostCard({ post, locale }: Props) {
           <span className="text-accent">Read</span>
         </div>
         <h3 className="text-xl font-semibold leading-tight text-text-primary transition group-hover:text-accent">
-          <Link href={`${base}/posts/${post.slug}`}>{post.title}</Link>
+          <Link href={`/posts/${post.slug}`}>{post.title}</Link>
         </h3>
         <p className="text-sm text-text-secondary">{post.description}</p>
         <div className="flex flex-wrap items-center gap-2">

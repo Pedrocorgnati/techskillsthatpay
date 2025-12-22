@@ -2,24 +2,27 @@ import type { Metadata } from "next";
 
 import Container from "@/components/Container";
 import SearchClient from "@/components/SearchClient";
-import { locales, normalizeLocale, type Locale } from "@/lib/i18n";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
+import { getHtmlLang, locales, normalizeLocale, type Locale } from "@/lib/i18n";
 import { getAllPosts } from "@/lib/posts";
+import { getPreviewRobots } from "@/lib/seo";
 
 type Props = { params: { lang: Locale } };
-
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/search`])
+    locales.map((loc) => [getHtmlLang(loc), `${getBaseUrlForLocale(loc)}/search`])
   );
   return {
     title: "Search",
     description: "Search TechSkillsThatPay posts by title, tags, or description.",
+    robots: getPreviewRobots() ?? { index: false, follow: false, noarchive: true },
     alternates: {
-      canonical: `https://techskillsthatpay.com/${lang}/search`,
-      languages: { ...alternates, "x-default": "https://techskillsthatpay.com/en/search" }
+      canonical: `${baseUrl}/search`,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/search` }
     }
   };
 }
@@ -48,7 +51,7 @@ export default async function SearchPage({ params }: Props) {
           Filter posts instantly on the client. Type a title, keyword, tag, or topic.
         </p>
         <div className="mt-6">
-          <SearchClient posts={searchable} locale={lang} />
+          <SearchClient posts={searchable} />
         </div>
       </div>
     </Container>
