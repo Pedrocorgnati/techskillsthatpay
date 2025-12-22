@@ -17,7 +17,9 @@ Payload shape:
   "global": {
     "translationKey": "string",
     "author": "string",
+    "authorBio": "string",
     "coverImage": "https://...",
+    "coverImageAlt": "string",
     "affiliateDisclosure": true,
     "date": "YYYY-MM-DD",
     "blogUrl": "optional",
@@ -29,10 +31,22 @@ Payload shape:
     "en": {
       "title": "string",
       "description": "string",
+      "seoTitle": "string",
+      "seoDescription": "string",
+      "ogImage": "string",
+      "canonicalOverride": "string",
+      "noindex": false,
       "slug": "string",
       "category": "string",
       "tags": ["string"],
       "keywords": ["string"],
+      "primaryKeyword": "string",
+      "secondaryKeywords": ["string"],
+      "searchIntent": "informational",
+      "serpFeature": "string",
+      "contentCluster": "string",
+      "internalLinks": ["string"],
+      "externalCitations": ["string"],
       "content": "mdx"
     },
     "pt": {},
@@ -77,3 +91,5 @@ Translator app steps:
   - Desktop publish creates commit/PR and triggers deploy.
 - Content:
   - MDX files end up in `content/posts/{locale}/` and share `translationKey`.
+- SEO:
+  - Run `npm run seo:check` before release.

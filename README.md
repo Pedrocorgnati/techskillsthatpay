@@ -16,7 +16,7 @@ npm run dev
 Visit http://localhost:3000.
 
 ## Project structure
-- `app/` – routes (home, posts, categories/tags, search, courses, about, privacy, disclosure, contact, sitemap, robots).
+- `app/` – routes (home, posts, categories/tags, search, courses, about, privacy, disclosure, contact, sitemap.xml, sitemap-index.xml, robots.txt, rss.xml).
 - `components/` – UI pieces (cards, badges, CTA, newsletter).
 - `lib/posts.ts` – loads/parses MDX, caches posts, compiles MDX.
 - `content/posts/{locale}/*.mdx` – blog posts with frontmatter.
@@ -28,15 +28,31 @@ Visit http://localhost:3000.
    ---
    title: "Post title"
    description: "One-liner for lists and SEO."
+   seoTitle: "Optional SEO title override"
+   seoDescription: "Optional SEO description override"
+   author: "Author Name"
+   translationKey: "your-slug-en"
    date: "2024-07-01"
    updated: "2024-07-10"
    tags: ["tag one", "tag two"]
    keywords: ["keyword one", "keyword two"] # optional
+   primaryKeyword: "primary keyword"
+   secondaryKeywords: ["secondary one", "secondary two", "secondary three"]
+   searchIntent: "informational"
+   serpFeature: "featured snippet"
+   contentCluster: "Data Analytics"
+   internalLinks: ["Existing post title", "Another internal link"]
+   externalCitations: ["https://reputable-source.com"]
    category: "Category Name"
    slug: "your-slug"
    coverImage: "https://images.unsplash.com/..." # optional
+   coverImageAlt: "Describe the cover image"
+   ogImage: "https://example.com/og.png" # optional override
+   canonicalOverride: "https://example.com/canonical" # optional override
+   noindex: false
    affiliateDisclosure: true
    readingTime: "auto" # will be overridden by runtime calculation
+   authorBio: "Short author bio"
    ---
    ```
 3. Write MDX content. Components available inside MDX: `<AffiliateCTA />`, `<NewsletterBox />`, and styled links.
@@ -63,9 +79,14 @@ npm run format
 ```
 
 ## SEO & feeds
-- `generateMetadata` on key routes for OpenGraph/Twitter.
-- `app/sitemap.ts` and `app/robots.txt/route.ts` auto-generate sitemap and robots.
-- JSON-LD `BlogPosting` injected on post pages.
+- Domain-aware metadata, canonicals, and hreflang via `generateMetadata`.
+- `/sitemap.xml` (per-domain) and `/sitemap-index.xml` (all locales).
+- `/robots.txt` disallows admin/API and blocks preview indexing.
+- JSON-LD WebSite/Organization + BlogPosting + BreadcrumbList.
+- RSS feeds per locale at `/rss.xml` (host-based).
+- Run `npm run seo:check` for automated validation.
+
+See `SEO_ARCHITECTURE.md` for the full strategy.
 
 ## AdSense & affiliates checklist
 - [ ] Add your AdSense verification/meta tags to `app/layout.tsx` or Vercel env.

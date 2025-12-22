@@ -18,15 +18,17 @@
   - Pages live under `app/[lang]/...` (home, posts, category, tag, search, about, privacy, disclosure, contact, courses, categories).
   - Root `app/page.tsx` redirects to `/en`.
 - Language switcher (`components/LanguageSwitcher.tsx`):
-  - Client-side switch updates cookie `locale` (1 year) and swaps the locale segment of the current path.
-  - Falls back to locale home if path doesn’t exist after switching (handled by router 404).
+  - Client-side switch updates cookie `locale` (1 year) and keeps clean URLs on mapped domains.
+  - Uses per-locale base domains; strips any `/en|/pt|/es|/it` prefix when present.
 - Data:
   - Content stored per-locale under `content/posts/{locale}/`.
   - `lib/posts.ts` loads MDX per locale; posts carry `locale`, `translationKey`, `author`, and other frontmatter.
   - Helpers: locale-scoped `getAllPosts(locale?)`, `getAllCategories(locale?)`, `getAllTags(locale?)`, and `getTranslationsFor(translationKey)`.
 - SEO:
-  - Layout adds `lang` attribute; per-page metadata uses domain-aware canonical + hreflang alternates.
-  - JSON-LD `BlogPosting` includes `inLanguage`.
-  - Sitemap (`app/sitemap.ts`) lists all locales for static pages, posts, categories, tags.
+  - HTML `lang` uses BCP47 (`en`, `pt-BR`, `es-ES`, `it-IT`) via `lib/i18n.ts`.
+  - Per-page metadata uses domain-aware canonical + hreflang alternates (only existing translations).
+  - JSON-LD uses locale-aware `inLanguage`.
+  - `/sitemap.xml` is per-domain; `/sitemap-index.xml` aggregates all locales.
+  - `/robots.txt` blocks admin/API and preview indexing.
 - Theme/layout:
   - Header/Footer use current locale for navigation links and include theme toggle + language switcher.
