@@ -4,8 +4,9 @@ import "./globals.css";
 import Analytics from "@/components/Analytics";
 import AdSlot from "@/components/AdSlot";
 import { adsenseEnabled } from "@/lib/config";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 
-const siteUrl = "https://techskillsthatpay.com";
+const siteUrl = getBaseUrlForLocale("en");
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

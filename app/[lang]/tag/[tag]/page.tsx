@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Container from "@/components/Container";
 import Pagination from "@/components/Pagination";
 import PostCard from "@/components/PostCard";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { normalizeLocale, type Locale, locales } from "@/lib/i18n";
 import { getAllPosts, getAllTags } from "@/lib/posts";
 
@@ -31,16 +32,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tag = tags.find((item) => item.slug === params.tag);
   if (!tag) return { title: "Tag not found" };
 
-  const url = `https://techskillsthatpay.com/${lang}/tag/${tag.slug}`;
+  const baseUrl = getBaseUrlForLocale(lang);
+  const url = `${baseUrl}/tag/${tag.slug}`;
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/tag/${tag.slug}`])
+    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/tag/${tag.slug}`])
   );
 
   const title = `Tag: ${tag.label}`;
   return {
     title,
     description: `Posts tagged with ${tag.label} from TechSkillsThatPay.`,
-    alternates: { canonical: url, languages: { ...alternates, "x-default": `https://techskillsthatpay.com/en/tag/${tag.slug}` } },
+    alternates: {
+      canonical: url,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/tag/${tag.slug}` }
+    },
     openGraph: {
       title,
       url,

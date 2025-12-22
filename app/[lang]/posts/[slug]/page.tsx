@@ -6,6 +6,7 @@ import AffiliateCTA from "@/components/AffiliateCTA";
 import Container from "@/components/Container";
 import CategoryBadge from "@/components/CategoryBadge";
 import TagPill from "@/components/TagPill";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { normalizeLocale, type Locale, locales } from "@/lib/i18n";
 import { getAllPosts, getCompiledPost, getPostBySlug, getTranslationsFor } from "@/lib/posts";
 
@@ -24,18 +25,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: "Post not found" };
 
   const translations = await getTranslationsFor(post.translationKey);
-  const url = `https://techskillsthatpay.com/${lang}/posts/${post.slug}`;
+  const baseUrl = getBaseUrlForLocale(lang);
+  const url = `${baseUrl}/posts/${post.slug}`;
   const alternates = Object.fromEntries(
     locales.map((loc) => {
       const slug = translations[loc as Locale] ?? post.slug;
-      return [loc, `https://techskillsthatpay.com/${loc}/posts/${slug}`];
+      return [loc, `${getBaseUrlForLocale(loc)}/posts/${slug}`];
     })
   );
 
   return {
     title: post.title,
     description: post.description,
-    alternates: { canonical: url, languages: { ...alternates, "x-default": `https://techskillsthatpay.com/en/posts/${post.slug}` } },
+    alternates: {
+      canonical: url,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/posts/${post.slug}` }
+    },
     openGraph: {
       title: post.title,
       description: post.description,
@@ -58,6 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PostPage({ params }: Props) {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   const compiled = await getCompiledPost(lang, params.slug);
   if (!compiled) {
     notFound();
@@ -72,7 +78,7 @@ export default async function PostPage({ params }: Props) {
     datePublished: post.date,
     dateModified: post.updated,
     image: post.coverImage,
-    url: `https://techskillsthatpay.com/${lang}/posts/${post.slug}`,
+    url: `${baseUrl}/posts/${post.slug}`,
     inLanguage: lang,
     author: {
       "@type": "Person",

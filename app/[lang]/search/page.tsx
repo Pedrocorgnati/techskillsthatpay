@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import Container from "@/components/Container";
 import SearchClient from "@/components/SearchClient";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { locales, normalizeLocale, type Locale } from "@/lib/i18n";
 import { getAllPosts } from "@/lib/posts";
 
@@ -11,15 +12,16 @@ export const dynamic = "force-dynamic";
 
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/search`])
+    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/search`])
   );
   return {
     title: "Search",
     description: "Search TechSkillsThatPay posts by title, tags, or description.",
     alternates: {
-      canonical: `https://techskillsthatpay.com/${lang}/search`,
-      languages: { ...alternates, "x-default": "https://techskillsthatpay.com/en/search" }
+      canonical: `${baseUrl}/search`,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/search` }
     }
   };
 }

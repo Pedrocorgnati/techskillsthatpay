@@ -2,21 +2,23 @@ import type { Metadata } from "next";
 
 import AffiliateCTA from "@/components/AffiliateCTA";
 import Container from "@/components/Container";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { locales, normalizeLocale, type Locale } from "@/lib/i18n";
 
 type Props = { params: { lang: Locale } };
 
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/courses`])
+    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/courses`])
   );
   return {
     title: "Courses",
     description: "Curated affiliate-friendly courses with strong ROI for tech careers.",
     alternates: {
-      canonical: `https://techskillsthatpay.com/${lang}/courses`,
-      languages: { ...alternates, "x-default": "https://techskillsthatpay.com/en/courses" }
+      canonical: `${baseUrl}/courses`,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/courses` }
     }
   };
 }

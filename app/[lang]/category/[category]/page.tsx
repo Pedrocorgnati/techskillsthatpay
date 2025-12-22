@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Container from "@/components/Container";
 import Pagination from "@/components/Pagination";
 import PostCard from "@/components/PostCard";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { normalizeLocale, type Locale, locales } from "@/lib/i18n";
 import { getAllCategories, getAllPosts } from "@/lib/posts";
 
@@ -31,16 +32,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const category = categories.find((cat) => cat.slug === params.category);
   if (!category) return { title: "Category not found" };
 
-  const url = `https://techskillsthatpay.com/${lang}/category/${category.slug}`;
+  const baseUrl = getBaseUrlForLocale(lang);
+  const url = `${baseUrl}/category/${category.slug}`;
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/category/${category.slug}`])
+    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/category/${category.slug}`])
   );
 
   const title = `Category: ${category.label}`;
   return {
     title,
     description: `Posts in ${category.label} from TechSkillsThatPay.`,
-    alternates: { canonical: url, languages: { ...alternates, "x-default": `https://techskillsthatpay.com/en/category/${category.slug}` } },
+    alternates: {
+      canonical: url,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/category/${category.slug}` }
+    },
     openGraph: {
       title,
       url,

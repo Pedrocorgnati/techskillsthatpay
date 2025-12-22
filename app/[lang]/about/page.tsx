@@ -2,21 +2,23 @@ import type { Metadata } from "next";
 
 import Container from "@/components/Container";
 import NewsletterBox from "@/components/NewsletterBox";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { locales, type Locale, normalizeLocale } from "@/lib/i18n";
 
 type Props = { params: { lang: Locale } };
 
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/about`])
+    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/about`])
   );
   return {
     title: "About",
     description: "Why TechSkillsThatPay exists and how we evaluate career skills and courses.",
     alternates: {
-      canonical: `https://techskillsthatpay.com/${lang}/about`,
-      languages: { ...alternates, "x-default": "https://techskillsthatpay.com/en/about" }
+      canonical: `${baseUrl}/about`,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/about` }
     }
   };
 }

@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
 
 import Container from "@/components/Container";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { locales, normalizeLocale, type Locale } from "@/lib/i18n";
 
 type Props = { params: { lang: Locale } };
 
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/privacy`])
+    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/privacy`])
   );
   return {
     title: "Privacy Policy",
     description: "Privacy practices for TechSkillsThatPay.",
     alternates: {
-      canonical: `https://techskillsthatpay.com/${lang}/privacy`,
-      languages: { ...alternates, "x-default": "https://techskillsthatpay.com/en/privacy" }
+      canonical: `${baseUrl}/privacy`,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/privacy` }
     }
   };
 }

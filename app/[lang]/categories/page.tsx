@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import Container from "@/components/Container";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { locales, normalizeLocale, type Locale } from "@/lib/i18n";
 import { getAllCategories, getAllPosts } from "@/lib/posts";
 
@@ -8,15 +9,16 @@ type Props = { params: { lang: Locale } };
 
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/categories`])
+    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/categories`])
   );
   return {
     title: "Categories",
     description: "Browse TechSkillsThatPay posts by category.",
     alternates: {
-      canonical: `https://techskillsthatpay.com/${lang}/categories`,
-      languages: { ...alternates, "x-default": "https://techskillsthatpay.com/en/categories" }
+      canonical: `${baseUrl}/categories`,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/categories` }
     }
   };
 }

@@ -4,6 +4,7 @@ import "../globals.css";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import ThemeProvider from "@/components/ThemeProvider";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { locales, type Locale, normalizeLocale } from "@/lib/i18n";
 
 type Props = {
@@ -19,17 +20,20 @@ export const dynamic = "force-dynamic";
 
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   return {
     title: {
       default: "TechSkillsThatPay | Evidence-based career skills",
       template: "%s | TechSkillsThatPay"
     },
-    metadataBase: new URL("https://techskillsthatpay.com"),
+    metadataBase: new URL(baseUrl),
     alternates: {
       languages: Object.fromEntries(
-        locales.map((l) => [l, `https://techskillsthatpay.com/${l}`]).concat([["x-default", "https://techskillsthatpay.com/en"]])
+        locales
+          .map((l) => [l, `${getBaseUrlForLocale(l)}`])
+          .concat([["x-default", `${getBaseUrlForLocale("en")}`]])
       ),
-      canonical: `https://techskillsthatpay.com/${lang}`
+      canonical: `${baseUrl}/`
     }
   };
 }

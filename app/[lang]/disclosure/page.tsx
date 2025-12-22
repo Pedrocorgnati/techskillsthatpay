@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
 
 import Container from "@/components/Container";
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
 import { locales, normalizeLocale, type Locale } from "@/lib/i18n";
 
 type Props = { params: { lang: Locale } };
 
 export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `https://techskillsthatpay.com/${loc}/disclosure`])
+    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/disclosure`])
   );
   return {
     title: "Affiliate Disclosure",
     description: "How TechSkillsThatPay uses affiliate links and how we choose partners.",
     alternates: {
-      canonical: `https://techskillsthatpay.com/${lang}/disclosure`,
-      languages: { ...alternates, "x-default": "https://techskillsthatpay.com/en/disclosure" }
+      canonical: `${baseUrl}/disclosure`,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/disclosure` }
     }
   };
 }
