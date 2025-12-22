@@ -7,6 +7,7 @@ export type PostFrontmatter = {
   category: string;
   slug: string;
   coverImage?: string;
+  keywords?: string[];
   affiliateDisclosure: boolean;
   readingTime?: string;
   author: string;

@@ -51,6 +51,7 @@ function assertFrontmatter(data: Record<string, unknown>, fallbackSlug: string):
     category: String(data.category),
     slug: String(data.slug || fallbackSlug),
     coverImage: data.coverImage ? String(data.coverImage) : undefined,
+    keywords: Array.isArray(data.keywords) ? data.keywords.map((k) => String(k)) : undefined,
     affiliateDisclosure: Boolean(data.affiliateDisclosure),
     readingTime: data.readingTime ? String(data.readingTime) : undefined,
     author: String(data.author),

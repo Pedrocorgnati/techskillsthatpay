@@ -10,6 +10,7 @@ const provider = process.env.NEXT_PUBLIC_CONTENT_STORE_PROVIDER || "fs";
 type GlobalPostInput = {
   translationKey: string;
   author: string;
+  coverImage: string;
   affiliateDisclosure: boolean;
   date: string;
 };
@@ -20,6 +21,7 @@ type LocalizedPostInput = {
   slug: string;
   category: string;
   tags: string;
+  keywords: string;
   content: string;
 };
 
@@ -29,6 +31,7 @@ const emptyLocalized: LocalizedPostInput = {
   slug: "",
   category: "",
   tags: "",
+  keywords: "",
   content: ""
 };
 
@@ -36,6 +39,7 @@ export default function PublishPage() {
   const [globalData, setGlobalData] = useState<GlobalPostInput>({
     translationKey: "",
     author: "",
+    coverImage: "",
     affiliateDisclosure: false,
     date: ""
   });
@@ -69,6 +73,10 @@ export default function PublishPage() {
 
     if (!globalData.translationKey.trim()) {
       setError("translationKey is required.");
+      return;
+    }
+    if (!globalData.coverImage.trim()) {
+      setError("coverImage is required.");
       return;
     }
     if (!localizedData.en.title.trim()) {
@@ -108,6 +116,7 @@ export default function PublishPage() {
       setGlobalData({
         translationKey: String(nextGlobal.translationKey || ""),
         author: String(nextGlobal.author || ""),
+        coverImage: String(nextGlobal.coverImage || ""),
         affiliateDisclosure: Boolean(nextGlobal.affiliateDisclosure),
         date: String(nextGlobal.date || "")
       });
@@ -120,6 +129,9 @@ export default function PublishPage() {
           slug: String(localeData.slug || ""),
           category: String(localeData.category || ""),
           tags: Array.isArray(localeData.tags) ? localeData.tags.join(", ") : String(localeData.tags || ""),
+          keywords: Array.isArray(localeData.keywords)
+            ? localeData.keywords.join(", ")
+            : String(localeData.keywords || ""),
           content: String(localeData.content || "")
         };
       });
@@ -231,6 +243,15 @@ export default function PublishPage() {
               value={globalData.author}
               onChange={(e) => setGlobalData({ ...globalData, author: e.target.value })}
               className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="text-sm font-semibold text-text-primary">
+            Cover image URL
+            <input
+              value={globalData.coverImage}
+              onChange={(e) => setGlobalData({ ...globalData, coverImage: e.target.value })}
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2 text-sm"
+              placeholder="https://..."
             />
           </label>
           <label className="text-sm font-semibold text-text-primary">
@@ -363,6 +384,14 @@ export default function PublishPage() {
                   <input
                     value={data.tags}
                     onChange={(e) => handleLocalizedChange(loc, "tags", e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
+                  />
+                </label>
+                <label className="block font-semibold text-text-primary">
+                  Keywords (comma separated)
+                  <input
+                    value={data.keywords}
+                    onChange={(e) => handleLocalizedChange(loc, "keywords", e.target.value)}
                     className="mt-2 w-full rounded-xl border border-border bg-muted px-3 py-2"
                   />
                 </label>

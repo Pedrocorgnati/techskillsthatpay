@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 
-import { adminEnabled, contentPublishProvider, githubBranch, githubOwner, githubRepo, githubToken, isProduction, publishMode } from "@/lib/config";
+import { adminEnabled, blogAdminApiToken, contentPublishProvider, githubBranch, githubOwner, githubRepo, githubToken, isProduction, publishMode } from "@/lib/config";
 import { locales, type Locale } from "@/lib/i18n";
 import { createRequestLogger } from "@/lib/logger";
-import { resetPostCache } from "@/lib/posts";
+import { getPostBySlug, resetPostCache } from "@/lib/posts";
 import { publishAllViaGithub } from "@/lib/publish/githubPublisher";
 import { getContentStore } from "@/lib/storage/contentStore";
 
 type GlobalPostInput = {
   translationKey: string;
   author: string;
+  coverImage: string;
   affiliateDisclosure: boolean;
   date: string;
 };
@@ -19,7 +20,8 @@ type LocalizedPostInput = {
   description: string;
   slug: string;
   category: string;
-  tags: string;
+  tags: string | string[];
+  keywords?: string | string[];
   content: string;
 };
 
@@ -60,8 +62,22 @@ function normalizeTags(tags: string | string[]) {
   return list.filter(Boolean);
 }
 
+function normalizeKeywords(keywords: string | string[] | undefined) {
+  if (!keywords) return [];
+  const list = Array.isArray(keywords)
+    ? keywords.map((k) => String(k))
+    : String(keywords)
+        .split(",")
+        .map((k) => k.trim());
+  return list.filter(Boolean);
+}
+
 function buildFrontmatter(global: GlobalPostInput, local: LocalizedPostInput, updated: string) {
   const tagsArray = normalizeTags(local.tags);
+  const keywordArray = normalizeKeywords(local.keywords);
+  const keywordLine = keywordArray.length
+    ? `keywords: [${keywordArray.map((k) => `"${k}"`).join(", ")}]\n`
+    : "";
 
   return `---
 title: "${local.title}"
@@ -69,6 +85,7 @@ description: "${local.description}"
 date: "${global.date}"
 updated: "${updated}"
 tags: [${tagsArray.map((t) => `"${t}"`).join(", ")}]
+${keywordLine}coverImage: "${global.coverImage}"
 category: "${local.category}"
 slug: "${local.slug}"
 author: "${global.author}"
@@ -86,6 +103,18 @@ function validatePayload(payload: Payload): ValidationResult {
   }
   if (!payload?.global?.author?.trim()) {
     errors.push("author is required.");
+  }
+  if (!payload?.global?.coverImage?.trim()) {
+    errors.push("coverImage is required.");
+  } else {
+    try {
+      const url = new URL(payload.global.coverImage);
+      if (!["http:", "https:"].includes(url.protocol)) {
+        errors.push("coverImage must be a valid http(s) URL.");
+      }
+    } catch {
+      errors.push("coverImage must be a valid URL.");
+    }
   }
   if (!payload?.global?.date?.trim()) {
     errors.push("date is required.");
@@ -126,9 +155,29 @@ function getUpdatedDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function isBrowserRequest(request: Request) {
+  return Boolean(request.headers.get("sec-fetch-mode"));
+}
+
+function extractBearerToken(authHeader: string | null) {
+  if (!authHeader) return "";
+  if (!authHeader.startsWith("Bearer ")) return "";
+  return authHeader.slice("Bearer ".length).trim();
+}
+
 export async function POST(request: Request) {
   if (!adminEnabled) {
     return NextResponse.json({ message: "Not found" }, { status: 404 });
+  }
+  if (blogAdminApiToken) {
+    const authHeader = request.headers.get("authorization");
+    const isBasic = authHeader?.startsWith("Basic ");
+    const bearer = extractBearerToken(authHeader);
+    const headerToken = request.headers.get("x-admin-token") || "";
+    const hasValidToken = headerToken === blogAdminApiToken || bearer === blogAdminApiToken;
+    if (!isBasic && !isBrowserRequest(request) && !hasValidToken) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
   }
   const logger = createRequestLogger();
   const ip = request.headers.get("x-forwarded-for") || "unknown";
@@ -144,6 +193,21 @@ export async function POST(request: Request) {
 
   const { global, localized } = body;
   const updated = getUpdatedDate();
+
+  const conflictErrors: string[] = [];
+  for (const locale of locales) {
+    const slug = localized[locale].slug;
+    const existing = await getPostBySlug(locale, slug);
+    if (existing && existing.translationKey !== global.translationKey) {
+      conflictErrors.push(`${locale}: slug already used by ${existing.translationKey}.`);
+    }
+  }
+  if (conflictErrors.length) {
+    return NextResponse.json(
+      { message: conflictErrors.join(" "), errors: conflictErrors },
+      { status: 400 }
+    );
+  }
 
   const files = locales.map((locale) => {
     const data = localized[locale];
