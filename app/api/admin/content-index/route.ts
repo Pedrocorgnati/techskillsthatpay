@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     const items = posts.map((post) => ({
       title: post.title,
       slug: post.slug,
-      url: `/${lang}/posts/${post.slug}`,
+      url: `/posts/${post.slug}`,
       translationKey: post.translationKey,
       category: post.category,
       tags: post.tags
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
   const items = counts.map((category) => ({
     name: category.label,
     slug: category.slug,
-    url: `/${lang}/category/${category.slug}`,
+    url: `/category/${category.slug}`,
     count: category.count
   }));
   logger.info("Admin content index categories", { locale: lang, count: items.length });

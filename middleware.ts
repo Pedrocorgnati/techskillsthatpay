@@ -7,6 +7,7 @@ import { defaultLocale, isLocale, normalizeLocale } from "@/lib/i18n";
 const PUBLIC_FILE = /\.(.*)$/;
 const BOT_UA = /(googlebot|bingbot|yandex|duckduckbot|baiduspider|facebookexternalhit|twitterbot|slurp|linkedinbot)/i;
 const adminPaths = ["/admin", "/api/admin"];
+const isPreview = process.env.VERCEL_ENV === "preview";
 
 function isAdminPath(pathname: string) {
   return adminPaths.some((prefix) => pathname.startsWith(prefix));
@@ -21,6 +22,13 @@ function unauthorized() {
 
 function notFound() {
   return new NextResponse("Not found", { status: 404 });
+}
+
+function applyPreviewHeaders(response: NextResponse) {
+  if (isPreview) {
+    response.headers.set("x-robots-tag", "noindex, nofollow, noarchive");
+  }
+  return response;
 }
 
 export function middleware(request: NextRequest) {
@@ -44,7 +52,7 @@ export function middleware(request: NextRequest) {
       const [user, pass] = decoded.split(":");
       if (user !== adminAuthUser || pass !== adminAuthPass) return unauthorized();
     }
-    return NextResponse.next();
+    return applyPreviewHeaders(NextResponse.next());
   }
 
   if (
@@ -52,21 +60,23 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api") ||
     PUBLIC_FILE.test(pathname)
   ) {
-    return NextResponse.next();
+    return applyPreviewHeaders(NextResponse.next());
   }
 
   const segments = pathname.split("/").filter(Boolean);
   const hasLocale = segments.length > 0 && isLocale(segments[0]);
+  const pathLocale = hasLocale ? normalizeLocale(segments[0]) : hostLocale;
 
   if (hasNoLocaleFlag) {
-    const res = NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-locale", defaultLocale);
+    const res = NextResponse.next({ request: { headers: requestHeaders } });
     res.cookies.set("locale", defaultLocale, { path: "/", maxAge: 60 * 60 * 24 * 365 });
-    return res;
+    return applyPreviewHeaders(res);
   }
 
   if (mappedHost) {
     if (hasLocale) {
-      const pathLocale = segments[0];
       const rest = `/${segments.slice(1).join("/")}`;
       if (pathLocale === hostLocale) {
         const redirectUrl = new URL(rest === "/" ? "/" : rest, request.url);
@@ -77,11 +87,20 @@ export function middleware(request: NextRequest) {
     }
 
     const targetPath = `/${hostLocale}${pathname}`;
-    return NextResponse.rewrite(new URL(targetPath, request.url));
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-locale", hostLocale);
+    return applyPreviewHeaders(
+      NextResponse.rewrite(new URL(targetPath, request.url), {
+        request: { headers: requestHeaders }
+      })
+    );
   }
 
   if (hasLocale) {
-    return NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-locale", pathLocale);
+    const res = NextResponse.next({ request: { headers: requestHeaders } });
+    return applyPreviewHeaders(res);
   }
 
   const cookieLocale = request.cookies.get("locale")?.value;

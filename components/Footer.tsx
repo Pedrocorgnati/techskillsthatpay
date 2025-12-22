@@ -1,19 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useMemo } from "react";
 
-import { defaultLocale, isLocale } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 
-export default function Footer() {
-  const pathname = usePathname();
-  const lang = useMemo(() => {
-    const segments = pathname.split("/").filter(Boolean);
-    return segments[0] && isLocale(segments[0]) ? segments[0] : defaultLocale;
-  }, [pathname]);
+type Props = {
+  locale: Locale;
+};
 
-  const buildHref = (path: string) => `/${lang}/${path}`;
+export default function Footer({ locale: _locale }: Props) {
+  const buildHref = (path: string) => `/${path}`;
 
   return (
     <footer className="mt-12 border-t border-border bg-surface py-10 backdrop-blur">

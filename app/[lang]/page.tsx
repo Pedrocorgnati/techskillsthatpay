@@ -4,17 +4,43 @@ import Container from "@/components/Container";
 import NewsletterBox from "@/components/NewsletterBox";
 import Pagination from "@/components/Pagination";
 import PostCard from "@/components/PostCard";
-import { normalizeLocale, type Locale } from "@/lib/i18n";
+import type { Metadata } from "next";
+
+import { getBaseUrlForLocale } from "@/lib/domainRouting";
+import { getHtmlLang, normalizeLocale, type Locale, locales } from "@/lib/i18n";
 import { getAllPosts } from "@/lib/posts";
+import { getPreviewRobots, getSiteDescription, getSiteTitle } from "@/lib/seo";
 
 const POSTS_PER_PAGE = 10;
-
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 type Props = {
   params: { lang: Locale };
   searchParams?: { page?: string | string[] };
 };
+
+export function generateMetadata({ params, searchParams }: Props): Metadata {
+  const lang = normalizeLocale(params.lang);
+  const baseUrl = getBaseUrlForLocale(lang);
+  const pageParam = Array.isArray(searchParams?.page) ? searchParams?.page[0] : searchParams?.page;
+  const page = Math.max(1, parseInt(pageParam || "1", 10));
+  const isPaginated = page > 1;
+  const title = isPaginated ? `${getSiteTitle(lang)} (Page ${page})` : getSiteTitle(lang);
+  const robots = getPreviewRobots() ?? (isPaginated ? { index: false, follow: true } : undefined);
+  const alternates = Object.fromEntries(
+    locales.map((loc) => [getHtmlLang(loc), `${getBaseUrlForLocale(loc)}/`])
+  );
+
+  return {
+    title,
+    description: getSiteDescription(lang),
+    robots,
+    alternates: {
+      canonical: `${baseUrl}/`,
+      languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/` }
+    }
+  };
+}
 
 export default async function HomePage({ params, searchParams }: Props) {
   const lang = normalizeLocale(params.lang);
@@ -48,13 +74,13 @@ export default async function HomePage({ params, searchParams }: Props) {
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href={`/${lang}/courses`}
+                  href="/courses"
                   className="rounded-full bg-gradient-to-r from-slate-900 via-slate-800 to-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
                 >
                   Explore curated courses
                 </Link>
                 <Link
-                  href={`/${lang}/categories`}
+                  href="/categories"
                   className="rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-text-primary shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
                   Browse by category
@@ -92,7 +118,7 @@ export default async function HomePage({ params, searchParams }: Props) {
               <h2 className="text-2xl font-semibold text-text-primary">Fresh, evergreen guides</h2>
             </div>
             <Link
-              href={`/${lang}/search`}
+              href="/search"
               className="text-sm font-semibold text-accent transition hover:text-accent/80"
             >
               Search posts →
@@ -100,10 +126,10 @@ export default async function HomePage({ params, searchParams }: Props) {
           </div>
           <div className="grid gap-6 md:grid-cols-2">
             {visible.map((post) => (
-              <PostCard key={post.slug} post={post} locale={lang} />
+              <PostCard key={post.slug} post={post} />
             ))}
           </div>
-          <Pagination currentPage={page} totalPages={totalPages} basePath={`/${lang}`} />
+          <Pagination currentPage={page} totalPages={totalPages} basePath="/" />
         </section>
       </Container>
     </div>

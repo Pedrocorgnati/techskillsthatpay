@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 
 import Container from "@/components/Container";
 import { getBaseUrlForLocale } from "@/lib/domainRouting";
-import { locales, normalizeLocale, type Locale } from "@/lib/i18n";
+import { getHtmlLang, locales, normalizeLocale, type Locale } from "@/lib/i18n";
+import { getPreviewRobots } from "@/lib/seo";
 
 type Props = { params: { lang: Locale } };
 
@@ -10,11 +11,12 @@ export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
   const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/privacy`])
+    locales.map((loc) => [getHtmlLang(loc), `${getBaseUrlForLocale(loc)}/privacy`])
   );
   return {
     title: "Privacy Policy",
     description: "Privacy practices for TechSkillsThatPay.",
+    robots: getPreviewRobots(),
     alternates: {
       canonical: `${baseUrl}/privacy`,
       languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/privacy` }

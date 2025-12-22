@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import Container from "@/components/Container";
 import NewsletterBox from "@/components/NewsletterBox";
 import { getBaseUrlForLocale } from "@/lib/domainRouting";
-import { locales, type Locale, normalizeLocale } from "@/lib/i18n";
+import { getHtmlLang, locales, type Locale, normalizeLocale } from "@/lib/i18n";
+import { getPreviewRobots } from "@/lib/seo";
 
 type Props = { params: { lang: Locale } };
 
@@ -11,11 +12,12 @@ export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
   const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/about`])
+    locales.map((loc) => [getHtmlLang(loc), `${getBaseUrlForLocale(loc)}/about`])
   );
   return {
     title: "About",
     description: "Why TechSkillsThatPay exists and how we evaluate career skills and courses.",
+    robots: getPreviewRobots(),
     alternates: {
       canonical: `${baseUrl}/about`,
       languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/about` }

@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
 
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
-import { defaultLocale, isLocale } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 
 const navItems = [
   { href: "", label: "Home" },
@@ -15,25 +14,23 @@ const navItems = [
   { href: "about", label: "About" }
 ];
 
-export default function Header() {
+type Props = {
+  locale: Locale;
+};
+
+export default function Header({ locale }: Props) {
   const pathname = usePathname();
-  const { lang, basePath } = useMemo(() => {
-    const segments = pathname.split("/").filter(Boolean);
-    const currentLang = segments[0] && isLocale(segments[0]) ? segments[0] : defaultLocale;
-    const remaining = segments.slice(1).join("/");
-    return { lang: currentLang, basePath: `/${currentLang}` + (remaining ? `/${remaining}` : "") };
-  }, [pathname]);
 
   const buildHref = (path: string) => {
-    if (!path) return `/${lang}`;
-    return `/${lang}/${path}`;
+    if (!path) return "/";
+    return `/${path}`;
   };
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-gradient-to-b from-surface/90 via-surface/80 to-surface/60 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link
-          href={`/${lang}`}
+          href="/"
           className="flex items-center gap-3 rounded-full px-3 py-2 text-lg font-semibold tracking-tight text-text-primary transition hover:bg-muted/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           <span className="rounded-xl bg-gradient-to-br from-accent to-blue-500 px-3 py-1 text-sm font-bold uppercase text-accent-foreground shadow-lg shadow-slate-900/20">
@@ -66,7 +63,7 @@ export default function Header() {
             <span>Search</span>
             <span aria-hidden className="text-text-secondary">⌘K</span>
           </Link>
-          <LanguageSwitcher currentPath={pathname} />
+          <LanguageSwitcher currentPath={pathname} locale={locale} />
           <ThemeToggle />
         </div>
       </div>
@@ -90,7 +87,7 @@ export default function Header() {
           >
             Search
           </Link>
-          <LanguageSwitcher currentPath={basePath} />
+          <LanguageSwitcher currentPath={pathname} locale={locale} />
         </div>
       </nav>
     </header>

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 
 import Container from "@/components/Container";
 import { getBaseUrlForLocale } from "@/lib/domainRouting";
-import { locales, normalizeLocale, type Locale } from "@/lib/i18n";
+import { getHtmlLang, locales, normalizeLocale, type Locale } from "@/lib/i18n";
 import { getAllCategories, getAllPosts } from "@/lib/posts";
+import { getPreviewRobots } from "@/lib/seo";
 
 type Props = { params: { lang: Locale } };
 
@@ -11,11 +12,12 @@ export function generateMetadata({ params }: Props): Metadata {
   const lang = normalizeLocale(params.lang);
   const baseUrl = getBaseUrlForLocale(lang);
   const alternates = Object.fromEntries(
-    locales.map((loc) => [loc, `${getBaseUrlForLocale(loc)}/categories`])
+    locales.map((loc) => [getHtmlLang(loc), `${getBaseUrlForLocale(loc)}/categories`])
   );
   return {
     title: "Categories",
     description: "Browse TechSkillsThatPay posts by category.",
+    robots: getPreviewRobots(),
     alternates: {
       canonical: `${baseUrl}/categories`,
       languages: { ...alternates, "x-default": `${getBaseUrlForLocale("en")}/categories` }
@@ -48,7 +50,7 @@ export default async function CategoriesPage({ params }: Props) {
         {counts.map((category) => (
           <a
             key={category.slug}
-            href={`/${lang}/category/${category.slug}`}
+            href={`/category/${category.slug}`}
             className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             <div>
